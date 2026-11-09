@@ -1,0 +1,48 @@
+# Governance roles. Rename, add or remove them to match your company.
+#
+#   scope     domain: each domain names its holder in domains/<id>/domain.yaml
+#             organization: the holder is named once, in organization.yaml
+#   required  every domain must name a holder (domain roles only)
+#   approves  files this role reviews in pull requests (one approval among the listed
+#             reviewers is enough). Generates .github/CODEOWNERS.
+#             governance | domain | glossary | products
+
+roles:
+  - id: data-owner
+    name: Data Owner
+    scope: domain
+    required: true
+    approves: [domain, glossary, products]
+    description: Accountable for the domain's data. Decides who may use it, and for what.
+
+  - id: data-steward
+    name: Data Steward
+    scope: domain
+    required: true
+    approves: [glossary]
+    description: Keeps definitions and quality rules accurate, day to day.
+
+  - id: data-sponsor
+    name: Data Sponsor
+    scope: domain
+    required: false
+    approves: []
+    description: Executive who funds the domain's data work and settles conflicts.
+
+  - id: cdo
+    name: Chief Data Officer
+    scope: organization
+    approves: []
+    description: Sets the data strategy and chairs the Data Council.
+
+  - id: head-of-data-governance
+    name: Head of Data Governance
+    scope: organization
+    approves: [governance]
+    description: Runs the governance programme and maintains this repository's rules.
+
+  - id: dpo
+    name: Data Protection Officer
+    scope: organization
+    approves: []  # reviews products holding personal data, see classification.yaml
+    description: Ensures GDPR compliance (GDPR art. 37-39).

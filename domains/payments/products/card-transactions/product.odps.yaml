@@ -1,0 +1,18 @@
+apiVersion: v1.1.0
+kind: DataProduct
+id: card-transactions
+name: Card transactions
+version: 1.0.0
+status: active
+domain: payments
+type: sourceAligned
+team:
+  name: cards
+
+description:
+  purpose: Every payment made with a Nova Bank card.
+
+outputPorts:
+  - name: card-transactions
+    version: 1.0.0
+    contractId: payments-card-transactions

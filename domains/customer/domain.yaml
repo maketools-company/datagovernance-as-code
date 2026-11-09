@@ -1,0 +1,9 @@
+id: customer
+name: Customer
+description: Who our customers are. Identity, contact details, consent and KYC status.
+teams: [onboarding]
+
+roles:
+  data-owner: sophie.laurent@novabank.example     # Head of Customer Onboarding
+  data-steward: karim.benali@novabank.example
+  data-sponsor: coo@novabank.example

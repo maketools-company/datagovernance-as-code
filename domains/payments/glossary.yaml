@@ -1,0 +1,25 @@
+# Business terms owned by the Payments domain.
+
+terms:
+  - id: transaction
+    name: Transaction
+    definition: Any movement of money into or out of a customer account.
+    status: approved
+
+  - id: deposit
+    name: Deposit
+    definition: A transaction that adds money to a customer account (transfer in, cash, cheque).
+    status: approved
+    related: [payments/transaction]
+
+  - id: card-payment
+    name: Card payment
+    definition: A transaction made with a Nova Bank card, at a merchant or online.
+    synonyms: [card transaction]
+    status: approved
+    related: [payments/transaction]
+
+  - id: balance
+    name: Balance
+    definition: Money available on an account at the end of the day, after all settled transactions.
+    status: approved

@@ -1,0 +1,24 @@
+# Who does what.
+#   R does the work · A decides (exactly one per activity) · C is consulted · I is informed
+# Keys are role ids, or `team` for the delivery team of the data product.
+
+activities:
+  - id: publish-data-product
+    name: Publish a new data product
+    raci: {team: R, data-owner: A, data-steward: C, dpo: C, head-of-data-governance: I}
+
+  - id: breaking-contract-change
+    name: Make a breaking change to a data contract
+    raci: {team: R, data-owner: A, data-steward: I}
+
+  - id: define-glossary-term
+    name: Add or change a glossary term
+    raci: {data-steward: R, data-owner: A, head-of-data-governance: C}
+
+  - id: classify-data
+    name: Classify a column (public, personal...)
+    raci: {team: R, data-steward: C, data-owner: A, dpo: C}
+
+  - id: create-policy
+    name: Create or change a policy
+    raci: {head-of-data-governance: R, cdo: A, dpo: C, data-owner: I}

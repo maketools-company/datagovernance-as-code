@@ -1,0 +1,30 @@
+# Sensitivity levels. Every column of a data contract uses one of them
+# (ODCS `classification` field).
+#
+#   reviewers  organization roles that must approve any data product exposing this level
+#   dpv        matching W3C Data Privacy Vocabulary concept, for exports and audits
+
+levels:
+  - id: public
+    name: Public
+    description: Can be published outside the company.
+
+  - id: internal
+    name: Internal
+    description: Any employee may read it. The default level.
+
+  - id: confidential
+    name: Confidential
+    description: Business-sensitive. Shared only through an approved data contract.
+
+  - id: personal
+    name: Personal data
+    description: Identifies a person, directly or indirectly (GDPR art. 4).
+    reviewers: [dpo]
+    dpv: https://w3id.org/dpv#PersonalData
+
+  - id: special-category
+    name: Special category personal data
+    description: Health, biometrics, beliefs and other data listed in GDPR art. 9.
+    reviewers: [dpo]
+    dpv: https://w3id.org/dpv#SpecialCategoryPersonalData

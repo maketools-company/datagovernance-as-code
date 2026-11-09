@@ -1,0 +1,64 @@
+apiVersion: v3.2.0
+kind: DataContract
+id: risk-credit-scores
+name: Credit scores
+version: 3.1.0
+status: active
+domain: risk
+team:
+  id: risk-analytics
+
+description:
+  purpose: Rank customers by credit risk for lending and collections teams.
+  limitations: Scores support decisions, they never make them (GDPR art. 22).
+
+servers:
+  - server: production
+    type: snowflake
+    environment: prod
+    account: novabank-prod
+    database: RISK
+    schema: GOLD
+
+schema:
+  - name: credit_scores
+    physicalName: credit_scores_v3
+    physicalType: table
+    description: One row per customer and day.
+    properties:
+      - name: customer_id
+        logicalType: string
+        required: true
+        classification: internal
+        authoritativeDefinitions:
+          - type: glossary
+            url: domains/customer/glossary.yaml#customer
+
+      - name: score_date
+        logicalType: date
+        required: true
+        classification: internal
+
+      - name: credit_score
+        logicalType: number
+        required: true
+        classification: personal
+        criticalDataElement: true
+        authoritativeDefinitions:
+          - type: glossary
+            url: domains/risk/glossary.yaml#credit-score
+        quality:
+          - type: sql
+            description: Scores are probabilities between 0 and 1.
+            query: SELECT COUNT(*) FROM ${object} WHERE credit_score < 0 OR credit_score > 1
+            mustBe: 0
+
+slaProperties:
+  - property: latency
+    value: 1
+    unit: d
+
+support:
+  - channel: team-risk-analytics
+    tool: slack
+    url: https://novabank.slack.com/archives/team-risk-analytics

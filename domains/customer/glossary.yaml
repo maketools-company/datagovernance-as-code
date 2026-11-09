@@ -1,0 +1,28 @@
+# Business terms owned by the Customer domain.
+# Link a term to another domain's term with `related: [<domain>/<term>]`.
+
+terms:
+  - id: customer
+    name: Customer
+    definition: A person who holds at least one open account at Nova Bank.
+    synonyms: [client, account holder]
+    status: approved
+
+  - id: active-customer
+    name: Active customer
+    definition: A customer with at least one transaction initiated by them in the last 90 days.
+    status: approved
+    related: [payments/transaction]
+
+  - id: kyc-status
+    name: KYC status
+    definition: >
+      Outcome of the Know Your Customer identity check: pending, verified or rejected.
+      Only verified customers can move money.
+    synonyms: [identity check status]
+    status: approved
+
+  - id: marketing-consent
+    name: Marketing consent
+    definition: The customer's explicit, revocable agreement to receive marketing messages.
+    status: draft

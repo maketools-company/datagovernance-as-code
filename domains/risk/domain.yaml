@@ -1,0 +1,8 @@
+id: risk
+name: Credit Risk
+description: How likely customers are to repay. Scores, defaults and exposure.
+teams: [risk-analytics]
+
+roles:
+  data-owner: nadia.cherif@novabank.example       # Chief Risk Officer
+  data-steward: paul.vidal@novabank.example

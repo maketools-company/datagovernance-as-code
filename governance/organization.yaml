@@ -1,0 +1,10 @@
+# The company, and who holds the company-wide roles (defined in roles.yaml).
+name: Nova Bank
+
+roles:
+  cdo: camille.roux@novabank.example
+  head-of-data-governance: claire.martin@novabank.example
+  dpo: dpo@novabank.example
+
+# GitHub team that reviews changes to governance/ (with the roles that approve "governance").
+governance_team: "@novabank/data-governance"

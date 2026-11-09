@@ -1,0 +1,81 @@
+# Data contract, Open Data Contract Standard (ODCS) v3.2.0: https://bitol-io.github.io/open-data-contract-standard/
+apiVersion: v3.2.0
+kind: DataContract
+id: customer-profiles
+name: Customer profiles
+version: 1.2.0
+status: active
+domain: customer
+team:
+  id: onboarding
+
+description:
+  purpose: Identify and contact customers, and check their KYC status.
+  usage: Join other products on customer_id.
+  limitations: Personal data. Read through this contract only (policy shared-through-contracts).
+
+servers:
+  - server: production
+    type: snowflake
+    environment: prod
+    account: novabank-prod
+    database: CUSTOMER
+    schema: GOLD
+
+schema:
+  - name: customers
+    physicalName: customers_v1
+    physicalType: table
+    description: One row per customer.
+    properties:
+      - name: customer_id
+        logicalType: string
+        primaryKey: true
+        required: true
+        unique: true
+        classification: internal
+        authoritativeDefinitions:
+          - type: glossary
+            url: domains/customer/glossary.yaml#customer
+
+      - name: email
+        logicalType: string
+        required: true
+        classification: personal
+
+      - name: birth_date
+        logicalType: date
+        classification: personal
+
+      - name: kyc_status
+        logicalType: string
+        required: true
+        classification: internal
+        authoritativeDefinitions:
+          - type: glossary
+            url: domains/customer/glossary.yaml#kyc-status
+        quality:
+          - metric: invalidValues
+            arguments:
+              validValues: [pending, verified, rejected]
+            mustBe: 0
+
+      - name: marketing_consent
+        logicalType: boolean
+        classification: personal
+        authoritativeDefinitions:
+          - type: glossary
+            url: domains/customer/glossary.yaml#marketing-consent
+
+slaProperties:
+  - property: latency
+    value: 1
+    unit: d
+  - property: retention
+    value: 5
+    unit: y
+
+support:
+  - channel: team-onboarding
+    tool: slack
+    url: https://novabank.slack.com/archives/team-onboarding

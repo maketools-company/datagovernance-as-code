@@ -1,0 +1,35 @@
+name: Add or change a glossary term
+description: Define a business term, or fix an existing definition.
+title: "[term] "
+labels: [governance-request]
+body:
+  - type: input
+    id: domain
+    attributes:
+      label: Domain
+      description: Folder name under domains/, e.g. customer
+    validations:
+      required: true
+  - type: input
+    id: term
+    attributes:
+      label: Term
+      placeholder: Active customer
+    validations:
+      required: true
+  - type: textarea
+    id: definition
+    attributes:
+      label: Definition
+      description: One or two sentences a new employee would understand.
+    validations:
+      required: true
+  - type: input
+    id: synonyms
+    attributes:
+      label: Synonyms (comma separated)
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options: [draft, approved, deprecated]
