@@ -2,8 +2,6 @@
 
 Version 1.0 · A Maketools standard · Apache 2.0
 
-This is the specification of 11 November 2026 with the amendments of the V1 template (A1 to A8, listed at the end). The repository you are reading is its reference implementation.
-
 ## Why
 
 “It’s only when data governance rules are in the code that they’re truly implemented.”

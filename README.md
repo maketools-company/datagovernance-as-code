@@ -107,10 +107,6 @@ python tools/dgac.py new-domain marketing --team @lumen-retail/marketing-data --
 | Transformations, ownership, interfaces | dbt groups, model access, model versions and contracts; [dbt-loom](https://github.com/nicholasyager/dbt-loom) for cross-project references with dbt Core |
 | Review | GitHub CODEOWNERS |
 
-## What V1 does not do
-
-V1 checks the shape of every file and builds everything; the [37 rules](RULES.md) are reviewed by hand, and Data Owner and committee approvals are collected outside GitHub.
-Ingestion, warehouse access (grants, masking), the orchestrator and any interface for business roles are out of scope.
 
 ## License
 
