@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/maketools/datagovernance-as-code/schemas/classification.schema.json",
+  "$id": "https://github.com/maketools-company/datagovernance-as-code/schemas/classification.schema.json",
   "title": "governance/classification.yaml: sensitivity levels",
   "type": "object",
   "additionalProperties": false,

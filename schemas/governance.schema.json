@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/maketools/datagovernance-as-code/schemas/governance.schema.json",
+  "$id": "https://github.com/maketools-company/datagovernance-as-code/schemas/governance.schema.json",
   "title": "governance.yml: governance declaration of a domain",
   "type": "object",
   "additionalProperties": false,

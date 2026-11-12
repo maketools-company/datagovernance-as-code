@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/maketools/datagovernance-as-code/schemas/glossary.schema.json",
+  "$id": "https://github.com/maketools-company/datagovernance-as-code/schemas/glossary.schema.json",
   "title": "governance/glossary/{domain}.yaml: business terms of a domain",
   "type": "object",
   "additionalProperties": false,

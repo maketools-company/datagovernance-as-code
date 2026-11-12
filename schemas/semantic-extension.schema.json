@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/maketools/datagovernance-as-code/schemas/semantic-extension.schema.json",
+  "$id": "https://github.com/maketools-company/datagovernance-as-code/schemas/semantic-extension.schema.json",
   "title": "{product}.ossie.yaml: semantic extension of a data product",
   "description": "A convention of the standard, assembled with the common model into plain Ossie 0.1.1. Shapes follow Ossie; `extends`, `private`, `derived_from` and `filters` are the standard's additions, and an expression may be a plain ANSI SQL string.",
   "type": "object",
