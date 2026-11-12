@@ -1,30 +1,20 @@
-# Sensitivity levels. Every column of a data contract uses one of them
-# (ODCS `classification` field).
-#
-#   reviewers  organization roles that must approve any data product exposing this level
-#   dpv        matching W3C Data Privacy Vocabulary concept, for exports and audits
-
+# Sensitivity levels used by product cards (classification) and contracts (column classification).
+# The four levels of the standard. Rename, add or remove levels to match your company's policy.
+#   rank   1 is the least sensitive; a product is classified at its most sensitive column
 levels:
   - id: public
+    rank: 1
     name: Public
-    description: Can be published outside the company.
-
+    description: May be published outside the company.
   - id: internal
+    rank: 2
     name: Internal
-    description: Any employee may read it. The default level.
-
+    description: Any employee may read it.
   - id: confidential
+    rank: 3
     name: Confidential
-    description: Business-sensitive. Shared only through an approved data contract.
-
-  - id: personal
-    name: Personal data
-    description: Identifies a person, directly or indirectly (GDPR art. 4).
-    reviewers: [dpo]
-    dpv: https://w3id.org/dpv#PersonalData
-
-  - id: special-category
-    name: Special category personal data
-    description: Health, biometrics, beliefs and other data listed in GDPR art. 9.
-    reviewers: [dpo]
-    dpv: https://w3id.org/dpv#SpecialCategoryPersonalData
+    description: Business-sensitive. Shared only through a data contract.
+  - id: restricted
+    rank: 4
+    name: Restricted
+    description: Strictly limited to named people. Personal data identifying a customer belongs here.

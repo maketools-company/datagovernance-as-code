@@ -1,9 +1,0 @@
-id: payments
-name: Payments
-description: Money movements. Deposits, transfers and card payments.
-teams: [wallet, cards]
-
-roles:
-  data-owner: julien.fabre@novabank.example       # Head of Payments
-  data-steward: amelie.roche@novabank.example
-  data-sponsor: cfo@novabank.example

@@ -1,0 +1,18 @@
+# Business terms of the Sales domain. Written by the domain's Data Steward,
+# approved by the central data governance team. Product cards link to them.
+domain: sales
+terms:
+  - id: order
+    name: Order
+    definition: A purchase confirmed and paid by a customer. Cancelled orders are not orders.
+    synonyms: [purchase, sale]
+    status: approved
+  - id: revenue
+    name: Revenue
+    definition: Amount paid by customers for their orders, in euros, taxes included, returns not deducted.
+    synonyms: [sales, turnover]
+    status: approved
+  - id: gross-margin
+    name: Gross margin
+    definition: Revenue minus the purchase cost of the goods sold.
+    status: draft

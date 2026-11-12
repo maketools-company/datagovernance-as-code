@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/maketools/datagovernance-as-code/schemas/governance.schema.json",
+  "title": "governance.yml: governance declaration of a domain",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["standard_version", "domain", "team", "target_level", "common_semantic_model_version", "ossie_version"],
+  "properties": {
+    "standard_version": {"const": "1.0"},
+    "domain": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+    "team": {"type": "string", "pattern": "^@[A-Za-z0-9-]+/[A-Za-z0-9._-]+$", "description": "Domain team (GitHub team). Reviews the domain folder outside its data products."},
+    "target_level": {"enum": [1, 2, 3]},
+    "common_semantic_model_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "ossie_version": {"const": "0.1.1"}
+  }
+}

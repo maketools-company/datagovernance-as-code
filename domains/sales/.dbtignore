@@ -1,0 +1,4 @@
+# Governance files read by the standard's tools, not by dbt (amendment A4).
+**/_data_product.odps.yaml
+**/*.odcs.yaml
+**/*.ossie.yaml

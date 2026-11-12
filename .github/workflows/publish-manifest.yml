@@ -1,0 +1,35 @@
+# Example: send each domain's governance manifest to a tool of your choice after a merge
+# (a catalogue, a documentation portal, a dashboard). Disabled until you set it up:
+#
+#   1. Settings > Secrets and variables > Actions > Variables: GOVERNANCE_ENDPOINT = https://...
+#   2. Secrets: GOVERNANCE_TOKEN = the token that endpoint expects
+#
+# Only metadata leaves the repository: owners, contracts, levels, definitions. No data, no code.
+name: publish-manifest
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    if: ${{ vars.GOVERNANCE_ENDPOINT != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python tools/dgac.py build && python tools/dgac.py assemble && python tools/dgac.py manifest
+      - name: Send the manifests
+        env:
+          ENDPOINT: ${{ vars.GOVERNANCE_ENDPOINT }}
+          TOKEN: ${{ secrets.GOVERNANCE_TOKEN }}
+        run: |
+          for file in build/*/governance-manifest.json; do
+            curl --fail --silent --show-error -X POST "$ENDPOINT" \
+              -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+              --data-binary "@$file"
+          done

@@ -1,6 +1,18 @@
+
 CLAUDE.md
 
+
+
 data/
+
+# Python
 .venv/
 __pycache__/
 .pytest_cache/
+
+# dbt and the standard's outputs (rebuilt by CI)
+build/
+**/target/
+**/logs/
+**/dbt_packages/
+**/.user.yml

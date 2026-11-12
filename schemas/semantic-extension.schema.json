@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/maketools/datagovernance-as-code/schemas/semantic-extension.schema.json",
+  "title": "{product}.ossie.yaml: semantic extension of a data product",
+  "description": "A convention of the standard, assembled with the common model into plain Ossie 0.1.1. Shapes follow Ossie; `extends`, `private`, `derived_from` and `filters` are the standard's additions, and an expression may be a plain ANSI SQL string.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["extends"],
+  "properties": {
+    "extends": {"type": "string", "description": "Name of the common semantic model."},
+    "datasets": {"type": "array", "items": {"$ref": "#/$defs/Dataset"}},
+    "relationships": {"type": "array", "items": {"$ref": "#/$defs/Relationship"}},
+    "metrics": {"type": "array", "items": {"$ref": "#/$defs/Metric"}}
+  },
+  "$defs": {
+    "Name": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+    "Expression": {
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {"type": "object", "required": ["dialects"], "properties": {"dialects": {"type": "array", "minItems": 1}}}
+      ]
+    },
+    "Field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "expression"],
+      "properties": {
+        "name": {"$ref": "#/$defs/Name"},
+        "expression": {"$ref": "#/$defs/Expression"},
+        "dimension": {"type": "object", "properties": {"is_time": {"type": "boolean"}}, "additionalProperties": false},
+        "description": {"type": "string"},
+        "ai_context": {}
+      }
+    },
+    "Dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source"],
+      "properties": {
+        "name": {"$ref": "#/$defs/Name"},
+        "source": {"type": "string", "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*(\\.v[0-9]+)?$"},
+        "private": {"type": "boolean"},
+        "primary_key": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "description": {"type": "string"},
+        "ai_context": {},
+        "fields": {"type": "array", "items": {"$ref": "#/$defs/Field"}}
+      }
+    },
+    "Relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "from", "to", "from_columns", "to_columns"],
+      "properties": {
+        "name": {"$ref": "#/$defs/Name"},
+        "from": {"type": "string"},
+        "to": {"type": "string"},
+        "from_columns": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "to_columns": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "private": {"type": "boolean"}
+      }
+    },
+    "Filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field"],
+      "properties": {
+        "field": {"type": "string", "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$", "description": "dataset.field"},
+        "equals": {"type": ["string", "number", "boolean"]},
+        "in": {"type": "array", "items": {"type": ["string", "number"]}, "minItems": 1}
+      },
+      "oneOf": [{"required": ["equals"]}, {"required": ["in"]}]
+    },
+    "Metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {"$ref": "#/$defs/Name"},
+        "description": {"type": "string"},
+        "ai_context": {},
+        "private": {"type": "boolean"},
+        "expression": {"$ref": "#/$defs/Expression"},
+        "derived_from": {"$ref": "#/$defs/Name"},
+        "filters": {"type": "array", "items": {"$ref": "#/$defs/Filter"}, "minItems": 1}
+      },
+      "oneOf": [
+        {"required": ["expression"], "not": {"anyOf": [{"required": ["derived_from"]}, {"required": ["filters"]}]}},
+        {"required": ["derived_from", "filters"], "not": {"required": ["expression"]}}
+      ]
+    }
+  }
+}

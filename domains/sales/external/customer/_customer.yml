@@ -1,0 +1,7 @@
+# Interfaces read from the Customer domain. Each model belongs to the data product that uses it.
+models:
+  - name: customer__customers
+    description: Customer's public interface `customers` v1, as read by Sales.
+    config:
+      group: orders
+      materialized: view

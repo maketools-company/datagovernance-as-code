@@ -1,0 +1,35 @@
+# Public interface: other domains may read it with ref('sales', 'orders', v=1).
+# The columns follow the contract orders_v1.odcs.yaml, which is the source of truth.
+models:
+  - name: orders
+    description: One row per valid order (cancelled orders excluded).
+    latest_version: 1
+    config:
+      access: public
+      contract: {enforced: true}
+    data_tests:
+      - orders__recency:
+          arguments: {column_name: loaded_at, max_hours: 24}
+    columns:
+      - name: order_id
+        data_type: integer
+        description: Order identifier.
+        constraints: [{type: not_null}, {type: primary_key}]
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_type: integer
+        description: The customer who placed the order (Customer's customers.customer_id).
+      - name: ordered_on
+        data_type: date
+        description: Day the order was placed.
+      - name: amount
+        data_type: decimal(12,2)
+        description: Amount paid by the customer, in euros, taxes included.
+      - name: status
+        data_type: varchar
+        description: delivered or returned.
+      - name: loaded_at
+        data_type: timestamp
+        description: When this row was last refreshed.
+    versions:
+      - v: 1

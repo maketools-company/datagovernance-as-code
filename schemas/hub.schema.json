@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/maketools/datagovernance-as-code/schemas/hub.schema.json",
+  "title": "governance/hub.yml: settings of the hub",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["organisation", "standard_version", "central_team", "common_semantic_model"],
+  "properties": {
+    "organisation": {"type": "string"},
+    "standard_version": {"const": "1.0"},
+    "central_team": {"type": "string", "pattern": "^@[A-Za-z0-9-]+/[A-Za-z0-9._-]+$"},
+    "common_semantic_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "version", "ossie_version"],
+      "properties": {
+        "path": {"type": "string"},
+        "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+        "ossie_version": {"const": "0.1.1"}
+      }
+    }
+  }
+}

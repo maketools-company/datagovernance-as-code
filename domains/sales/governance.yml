@@ -1,0 +1,8 @@
+# Which version of the standard this domain applies, and the level it aims for (GOV-111).
+# Rules of the target level and below block a pull request; higher levels only warn.
+standard_version: "1.0"
+domain: sales
+team: "@lumen-retail/sales-data"            # domain team: reviews this folder outside its data products
+target_level: 1                         # 1 Identified · 2 Isolated · 3 Under contract
+common_semantic_model_version: "1.0.0"  # pinned; move to a new version on purpose
+ossie_version: "0.1.1"

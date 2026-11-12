@@ -1,0 +1,9 @@
+# Where to find the dbt manifest of each domain this one reads (cross-project references, GOV-313).
+# In the monorepo, the producing domain is built first and its manifest is on disk.
+# In a repository per domain, point to the manifest your producer's CI publishes
+# (dbt-loom also reads from S3, GCS, Azure, dbt Cloud...).
+manifests:
+  - name: customer
+    type: file
+    config:
+      path: ../customer/target/manifest.json

@@ -1,0 +1,96 @@
+# Data contract of the public interface `customers`, Open Data Contract Standard (ODCS) v3.2.0.
+# Source of truth for the interface's schema: the dbt columns in customers.yml follow it (GOV-304).
+# Contract major version = dbt model version (GOV-305): customers v1 ↔ contract 1.x.y.
+apiVersion: v3.2.0
+kind: DataContract
+id: customer-customers-v1
+name: Customers
+version: 1.0.0
+status: active
+domain: customer
+
+description:
+  purpose: Identify and contact customers, and know where they live.
+  usage: Join on customer_id. Read it with ref('customer', 'customers', v=1).
+  limitations: Contains personal data (email, first name). Do not copy it outside a data product.
+
+team:                                   # copied from the product card
+  name: "@lumen-retail/customer-data"
+  members:
+    - username: sophie.laurent@lumen.example
+      role: data-owner
+    - username: karim.benali@lumen.example
+      role: data-steward
+
+servers:
+  - server: local
+    type: duckdb
+    environment: dev
+    database: build/warehouse.duckdb
+    schema: customer
+
+schema:
+  - name: customers
+    physicalName: customers_v1
+    physicalType: table
+    description: One row per customer.
+    properties:
+      - name: customer_id
+        logicalType: integer
+        physicalType: integer
+        description: Customer identifier, stable over time.
+        primaryKey: true
+        required: true
+        unique: true
+        classification: internal
+        authoritativeDefinitions:
+          - type: businessDefinition
+            url: governance/glossary/customer.yaml#customer
+      - name: email
+        logicalType: string
+        physicalType: varchar
+        description: Email address, lower case. Personal data.
+        classification: restricted
+        criticalDataElement: true
+      - name: first_name
+        logicalType: string
+        physicalType: varchar
+        description: First name. Personal data.
+        classification: restricted
+      - name: country
+        logicalType: string
+        physicalType: varchar
+        description: Country of residence (France, Spain...).
+        classification: internal
+        authoritativeDefinitions:
+          - type: businessDefinition
+            url: governance/glossary/customer.yaml#country
+      - name: signed_up_on
+        logicalType: date
+        physicalType: date
+        description: Day the customer created their account.
+        classification: internal
+      - name: loaded_at
+        logicalType: timestamp
+        physicalType: timestamp
+        description: When this row was last refreshed.
+        classification: internal
+    quality:
+      - name: one_row_per_customer
+        description: customer_id is unique and never empty.
+        dimension: uniqueness
+        type: library
+        metric: duplicateValues
+        arguments: {properties: [customer_id]}
+        mustBe: 0
+
+slaProperties:
+  - property: latency                 # freshness promised; tested by customer_profile__recency (GOV-309)
+    value: 24
+    unit: h
+  - property: frequency
+    value: 1
+    unit: d
+  - property: retention
+    value: 5
+    unit: y

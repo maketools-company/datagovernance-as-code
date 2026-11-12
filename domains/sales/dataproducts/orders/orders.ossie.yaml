@@ -1,0 +1,41 @@
+# Semantic extension of the `orders` data product (a convention of the standard, not an Ossie feature).
+# `dgac assemble` merges it with the common model into one plain Ossie 0.1.1 document.
+#
+#   A product adds; it never redefines a common metric or dimension (GOV-316).
+#   A derived metric names its parent, keeps its name as a prefix, and only adds filters (GOV-317, GOV-318).
+#   Shared semantics use public interfaces only; anything built on internal layers is `private: true` (GOV-315).
+#
+# A dataset's `source` is `{domain}.{interface}.v{n}` for a public interface,
+# or `{domain}.{model}` for one of this product's internal models (private datasets only).
+extends: lumen_common
+
+datasets:
+  - name: order_margins
+    source: sales.gld_orders
+    private: true
+    primary_key: [order_id]
+    description: Margin per order. For the Sales domain only.
+    fields:
+      - name: order_id
+        expression: order_id
+      - name: ordered_on
+        expression: ordered_on
+        dimension: {is_time: true}
+      - name: margin
+        expression: margin
+
+metrics:
+  - name: revenue_france
+    derived_from: revenue
+    filters:
+      - {field: customers.country, equals: France}
+    description: Revenue from customers living in France.
+
+  - name: average_basket
+    expression: AVG(orders.amount)
+    description: Average amount of a valid order, in euros.
+
+  - name: gross_margin
+    private: true
+    expression: SUM(order_margins.margin)
+    description: Revenue minus purchase cost. For the Sales domain only.

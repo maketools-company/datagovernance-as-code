@@ -1,0 +1,8 @@
+customer_id,email,first_name,country_code,signed_up_on
+1,alice.martin@mail.example,Alice,FR,2025-02-14
+2,ben.okafor@mail.example,Ben,GB,2025-03-02
+3,chloe.dupuis@mail.example,Chloé,FR,2025-04-21
+4,diego.ruiz@mail.example,Diego,ES,2025-06-09
+5,emma.weber@mail.example,Emma,DE,2025-07-30
+6,farid.haddad@mail.example,Farid,FR,2025-09-12
+7,BEN.OKAFOR@mail.example,Ben,GB,2025-03-02

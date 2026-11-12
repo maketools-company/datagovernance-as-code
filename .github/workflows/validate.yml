@@ -1,0 +1,37 @@
+# Runs on every pull request. A failing step blocks the merge.
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      - name: Check governance files against their schemas
+        run: python tools/dgac.py validate
+      - name: Check generated files are up to date (CODEOWNERS, dbt groups, selectors, semantics)
+        run: python tools/dgac.py generate --check
+      - name: Build every data product on its own, producers first (contracts enforced, tests run)
+        run: python tools/dgac.py build
+      - name: Assemble the semantic models (common model + extensions, private left out)
+        run: python tools/dgac.py assemble
+      - name: Write the governance manifest of each domain
+        run: python tools/dgac.py manifest
+      - name: Test the tool
+        run: pytest -q tests
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: governance
+          path: |
+            build/*/governance-manifest.json
+            build/semantic/

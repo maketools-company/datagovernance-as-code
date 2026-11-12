@@ -1,0 +1,106 @@
+# Data contract of the public interface `orders`, Open Data Contract Standard (ODCS) v3.2.0.
+# Source of truth for the interface's schema: the dbt columns in orders.yml follow it (GOV-304).
+# Contract major version = dbt model version (GOV-305): orders v1 ↔ contract 1.x.y.
+apiVersion: v3.2.0
+kind: DataContract
+id: sales-orders-v1
+name: Orders
+version: 1.0.0
+status: active
+domain: sales
+
+description:
+  purpose: Count orders and revenue, by day, status or customer.
+  usage: Read it with ref('sales', 'orders', v=1). Join to Customer's customers on customer_id.
+  limitations: Cancelled orders are excluded. Amounts include taxes; returns are not deducted.
+
+team:                                   # copied from the product card
+  name: "@lumen-retail/sales-data"
+  members:
+    - username: julien.fabre@lumen.example
+      role: data-owner
+    - username: amelie.roche@lumen.example
+      role: data-steward
+
+servers:
+  - server: local
+    type: duckdb
+    environment: dev
+    database: build/warehouse.duckdb
+    schema: sales
+
+schema:
+  - name: orders
+    physicalName: orders_v1
+    physicalType: table
+    description: One row per valid order.
+    properties:
+      - name: order_id
+        logicalType: integer
+        physicalType: integer
+        description: Order identifier.
+        primaryKey: true
+        required: true
+        unique: true
+        classification: internal
+        authoritativeDefinitions:
+          - type: businessDefinition
+            url: governance/glossary/sales.yaml#order
+      - name: customer_id
+        logicalType: integer
+        physicalType: integer
+        description: The customer who placed the order (Customer's customers.customer_id).
+        required: true
+        classification: confidential
+      - name: ordered_on
+        logicalType: date
+        physicalType: date
+        description: Day the order was placed.
+        required: true
+        classification: internal
+      - name: amount
+        logicalType: number
+        physicalType: decimal(12,2)
+        description: Amount paid by the customer, in euros, taxes included.
+        required: true
+        classification: confidential
+        criticalDataElement: true
+        authoritativeDefinitions:
+          - type: businessDefinition
+            url: governance/glossary/sales.yaml#revenue
+      - name: status
+        logicalType: string
+        physicalType: varchar
+        description: delivered or returned.
+        classification: internal
+        quality:
+          - name: known_status
+            dimension: conformity
+            type: library
+            metric: invalidValues
+            arguments: {validValues: [delivered, returned]}
+            mustBe: 0
+      - name: loaded_at
+        logicalType: timestamp
+        physicalType: timestamp
+        description: When this row was last refreshed.
+        classification: internal
+    quality:
+      - name: one_row_per_order
+        description: order_id is unique and never empty.
+        dimension: uniqueness
+        type: library
+        metric: duplicateValues
+        arguments: {properties: [order_id]}
+        mustBe: 0
+
+slaProperties:
+  - property: latency                 # freshness promised; tested by orders__recency (GOV-309)
+    value: 24
+    unit: h
+  - property: frequency
+    value: 1
+    unit: d
+  - property: retention
+    value: 10
+    unit: y

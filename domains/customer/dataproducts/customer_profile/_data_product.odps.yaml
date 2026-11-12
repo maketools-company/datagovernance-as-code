@@ -1,0 +1,33 @@
+# Product card, Open Data Product Standard (ODPS) v1.1.0, with the profile of the standard
+# (schemas/data-product.profile.schema.json). Readable without knowing dbt. Source of truth for owners.
+apiVersion: v1.1.0
+kind: DataProduct
+id: customer_profile                  # same as the folder and the dbt group
+name: Customer profile
+status: active                        # draft, proposed, active, deprecated, retired
+domain: customer
+description:
+  purpose: One row per customer, with contact details and country. The reference list of who our customers are.
+
+team:
+  name: "@lumen-retail/customer-data"     # tech owner: the GitHub team that approves the code (CODEOWNERS)
+  members:
+    - username: sophie.laurent@lumen.example
+      role: data-owner                    # business owner, accountable
+    - username: karim.benali@lumen.example
+      role: data-steward                  # definitions and classification; stands in for the Data Owner
+
+customProperties:
+  - property: classification            # a level from governance/classification.yaml
+    value: restricted
+  - property: containsPii
+    value: true
+
+authoritativeDefinitions:               # glossary terms the product implements
+  - type: businessDefinition
+    url: governance/glossary/customer.yaml#customer
+  - type: businessDefinition
+    url: governance/glossary/customer.yaml#country
+
+# Interfaces and consumers are not listed here: `dgac manifest` derives them from public/
+# and from the cross-project references dbt sees (a hand-kept list goes stale).

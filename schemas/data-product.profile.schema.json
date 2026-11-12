@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/maketools/datagovernance-as-code/schemas/data-product.profile.schema.json",
+  "title": "Product card: profile of the Data Governance as Code standard on ODPS v1.1.0",
+  "description": "A product card is a valid ODPS v1.1.0 document (schemas/bitol/odps-json-schema-v1.1.0.json) that also holds the fields the standard requires: Data Owner, Data Steward, tech owner, classification and containsPii.",
+  "type": "object",
+  "required": ["apiVersion", "kind", "id", "name", "status", "domain", "description", "team", "customProperties"],
+  "properties": {
+    "apiVersion": {"const": "v1.1.0"},
+    "kind": {"const": "DataProduct"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "Same as the product folder and the dbt group (snake_case)."},
+    "name": {"type": "string", "minLength": 1},
+    "status": {"enum": ["draft", "proposed", "active", "deprecated", "retired"]},
+    "domain": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+    "description": {
+      "type": "object",
+      "required": ["purpose"],
+      "properties": {"purpose": {"type": "string", "minLength": 10, "description": "One or two sentences a business reader understands."}}
+    },
+    "team": {
+      "type": "object",
+      "required": ["name", "members"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^@[A-Za-z0-9-]+/[A-Za-z0-9._-]+$", "description": "Tech owner: the GitHub team that approves the code."},
+        "members": {
+          "type": "array",
+          "allOf": [
+            {"contains": {"type": "object", "required": ["role", "username"], "properties": {"role": {"const": "data-owner"}}}, "minContains": 1, "maxContains": 1},
+            {"contains": {"type": "object", "required": ["role", "username"], "properties": {"role": {"const": "data-steward"}}}, "minContains": 1, "maxContains": 1}
+          ],
+          "items": {"type": "object", "properties": {"username": {"type": "string", "format": "email", "pattern": "^[^@\\s]+@[^@\\s]+$"}}}
+        }
+      }
+    },
+    "customProperties": {
+      "type": "array",
+      "allOf": [
+        {"contains": {"type": "object", "required": ["property", "value"], "properties": {"property": {"const": "classification"}, "value": {"type": "string"}}}, "minContains": 1, "maxContains": 1},
+        {"contains": {"type": "object", "required": ["property", "value"], "properties": {"property": {"const": "containsPii"}, "value": {"type": "boolean"}}}, "minContains": 1, "maxContains": 1}
+      ]
+    }
+  }
+}

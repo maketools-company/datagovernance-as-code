@@ -1,0 +1,9 @@
+# Local warehouse for the example: one DuckDB file shared by every domain.
+# Point it to your own warehouse (Snowflake, BigQuery, Databricks...) in production.
+sales:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DGAC_DUCKDB_PATH', '../../build/warehouse.duckdb') }}"
+      schema: sales

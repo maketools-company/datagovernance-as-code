@@ -1,0 +1,35 @@
+# Public interface: other domains may read it with ref('customer', 'customers', v=1).
+# The columns follow the contract customers_v1.odcs.yaml, which is the source of truth.
+models:
+  - name: customers
+    description: One row per customer, with contact details and country.
+    latest_version: 1
+    config:
+      access: public
+      contract: {enforced: true}
+    data_tests:
+      - customer_profile__recency:
+          arguments: {column_name: loaded_at, max_hours: 24}
+    columns:
+      - name: customer_id
+        data_type: integer
+        description: Customer identifier, stable over time.
+        constraints: [{type: not_null}, {type: primary_key}]
+        data_tests: [unique, not_null]
+      - name: email
+        data_type: varchar
+        description: Email address, lower case. Personal data.
+      - name: first_name
+        data_type: varchar
+        description: First name. Personal data.
+      - name: country
+        data_type: varchar
+        description: Country of residence (France, Spain...).
+      - name: signed_up_on
+        data_type: date
+        description: Day the customer created their account.
+      - name: loaded_at
+        data_type: timestamp
+        description: When this row was last refreshed.
+    versions:
+      - v: 1

@@ -1,0 +1,33 @@
+# The Sales domain, as one dbt project (Data Governance as Code standard 1.0).
+# In a repository of its own it would be `data-dbt-sales`, with the same content.
+name: sales
+version: "1.0.0"
+profile: sales
+
+model-paths: [dataproducts, external]   # producer zone, consumer zone
+seed-paths: [seeds]
+macro-paths: [macros]
+test-paths: [tests]
+clean-targets: [target]
+
+flags:
+  warn_error_options:
+    # A new data product starts with empty folders: their configuration applies once models exist.
+    silence: [UnusedResourceConfigPath]
+
+seeds:
+  sales:
+    # dgac:seeds (one line per data product, added by `dgac new-product`)
+    orders: {+group: orders}
+
+# Paths below are relative to dataproducts/ and external/ (dbt's model-paths).
+models:
+  sales:
+    +access: private              # nothing is visible to other domains unless it is in public/
+    # dgac:models (one block per data product, added by `dgac new-product`)
+    orders:
+      +group: orders
+      staging: {+materialized: view}
+      silver: {+materialized: table}
+      gold: {+materialized: table}
+      public: {+materialized: table, +access: public}

@@ -1,0 +1,9 @@
+# The hub: what holds for every domain. Maintained by the central data governance team.
+organisation: Lumen Retail            # fictional home-goods retailer used by the example
+standard_version: "1.0"
+central_team: "@lumen-retail/data-governance"   # GitHub team, reviews governance/ (CODEOWNERS)
+
+common_semantic_model:
+  path: governance/semantic/common.ossie.yaml
+  version: "1.0.0"                    # bump the major version when a shared definition changes (GOV-320)
+  ossie_version: "0.1.1"

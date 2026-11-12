@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=../../schemas/ossie/osi-schema-0.1.1.json
+#
+# Common semantic model: what the whole company must mean the same way.
+# Owned by the central data governance team; every change is approved by the governance committee (GOV-A04).
+# Plain Apache Ossie 0.1.1. Its version is in governance/hub.yml.
+#
+# Convention of the standard: a dataset's `source` names a public interface, `{domain}.{interface}.v{n}`.
+# `dgac assemble` replaces it with the physical table when it builds a product's assembled model.
+version: "0.1.1"
+semantic_model:
+  - name: lumen_common
+    description: Enterprise metrics and shared dimensions of Lumen Retail.
+    datasets:
+      - name: orders
+        source: sales.orders.v1
+        primary_key: [order_id]
+        description: Valid orders, from the Sales domain.
+        fields:
+          - name: order_id
+            expression: {dialects: [{dialect: ANSI_SQL, expression: order_id}]}
+          - name: customer_id
+            expression: {dialects: [{dialect: ANSI_SQL, expression: customer_id}]}
+          - name: ordered_on
+            expression: {dialects: [{dialect: ANSI_SQL, expression: ordered_on}]}
+            dimension: {is_time: true}
+            description: Day the order was placed. The company calendar.
+          - name: status
+            expression: {dialects: [{dialect: ANSI_SQL, expression: status}]}
+            dimension: {is_time: false}
+          - name: amount
+            expression: {dialects: [{dialect: ANSI_SQL, expression: amount}]}
+      - name: customers
+        source: customer.customers.v1
+        primary_key: [customer_id]
+        description: Customers, from the Customer domain.
+        fields:
+          - name: customer_id
+            expression: {dialects: [{dialect: ANSI_SQL, expression: customer_id}]}
+          - name: country
+            expression: {dialects: [{dialect: ANSI_SQL, expression: country}]}
+            dimension: {is_time: false}
+            description: Country of residence.
+          - name: signed_up_on
+            expression: {dialects: [{dialect: ANSI_SQL, expression: signed_up_on}]}
+            dimension: {is_time: true}
+    relationships:
+      - name: orders_to_customers
+        from: orders
+        to: customers
+        from_columns: [customer_id]
+        to_columns: [customer_id]
+    metrics:
+      - name: revenue
+        expression: {dialects: [{dialect: ANSI_SQL, expression: SUM(orders.amount)}]}
+        description: Amount paid by customers, in euros, taxes included, returns not deducted.
+        ai_context: {synonyms: [sales, turnover]}
+      - name: order_count
+        expression: {dialects: [{dialect: ANSI_SQL, expression: COUNT(orders.order_id)}]}
+        description: Number of valid orders.

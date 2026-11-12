@@ -1,50 +1,38 @@
 # Instructions for AI agents
 
-This repository is the source of truth for the company's data governance.
-Read the YAML files directly; `CATALOG.md` is a generated summary.
+This repository follows the Data Governance as Code standard ([STANDARD.md](STANDARD.md), rules in [RULES.md](RULES.md)).
+Read the files directly. After a build, `build/<domain>/governance-manifest.json` summarises each domain.
 
 ## Answering questions
 
-- Who owns some data: `domains/<domain>/domain.yaml` → `roles`.
-- What a term means: `domains/<domain>/glossary.yaml`. Only `approved` terms are official.
-- What a column contains and how sensitive it is: the `*.odcs.yaml` contract, `classification` field.
-- What you may do with a product: its `context` block, then `governance/policies.yaml`.
-  Constraints in `context.constraints` are hard rules.
-- Who to contact when data breaks: the product's team in `governance/teams.yaml` → `contact`.
+- Who owns a data product: its card, `domains/<domain>/dataproducts/<product>/_data_product.odps.yaml`,
+  `team.members` (`data-owner`, `data-steward`) and `team.name` (tech owner, a GitHub team).
+- What a column contains and how sensitive it is: the contract `public/<interface>_v<n>.odcs.yaml`, field `classification`.
+  Levels are defined in `governance/classification.yaml`.
+- What a business term means: `governance/glossary/<domain>.yaml`. Only `approved` terms are official.
+- What a metric means: the common model `governance/semantic/common.ossie.yaml`, or the product's
+  `<product>.ossie.yaml`. Metrics marked `private: true` are for the owning domain only.
+- Who reads an interface: the `consumers` of the product in the governance manifest, derived from dbt references.
 
 ## Making a change
 
-1. Edit the YAML. Follow the closest existing example; do not invent fields.
-   New data product: `python tools/dgac.py new-product <domain> <product-id> <team-id>`, then fill the TODOs.
-2. Run `python tools/dgac.py generate`, then `python tools/dgac.py check`. Fix every error.
-3. Open a pull request that links the issue it answers. Never merge it yourself.
+1. Use the tool to create things: `python tools/dgac.py new-domain`, `new-product`, `new-interface`.
+   Otherwise follow the closest existing example; do not invent fields.
+2. Run `python tools/dgac.py generate`, then `python tools/dgac.py validate`. Fix every error.
+3. If you changed dbt models, run `python tools/dgac.py build`.
+4. Open a pull request. Never merge it yourself. Say in its description when it needs the Data Owner
+   (new public interface, new major version, change of classification) or the governance committee
+   (common semantic model).
 
-- New products and contracts start as `status: proposed`. The domain owner sets `active` when approving.
-- A request with a future date: open the PR now and write "merge on <date>" in its description.
-- A change that touches another domain (e.g. a product of `risk` now reads a `payments` contract)
-  goes in the same PR. CODEOWNERS asks that domain's owner to approve.
-- In `inputPorts`, `version` is the version of the contract you read.
-- When unsure whether a column is personal data, classify it `personal` and ask in the PR. The DPO decides.
+## Rules you must not break
 
-## Conventions
-
-- Ids are lowercase with dashes: `card-transactions`.
-- People are work emails. Never first names alone.
-- A product lives in `domains/<domain>/products/<product-id>/`, with `product.odps.yaml`
-  and one `<contract-id>.odcs.yaml` per output port. Contract ids start with the domain: `payments-deposits`.
-- In ODPS, `team.name` is a team id. In ODCS, `team.id` is a team id.
-- Link a column to a glossary term with `authoritativeDefinitions: [{type: glossary, url: domains/<domain>/glossary.yaml#<term>}]`.
-- Never edit `CATALOG.md` or `.github/CODEOWNERS` by hand.
-
-## Turning an issue into a pull request
-
-Issues labelled `governance-request` come from the forms in `.github/ISSUE_TEMPLATE/`.
-
-| Form | Edit |
-|---|---|
-| Change who holds a role | `roles` in `domains/<domain>/domain.yaml` |
-| Add or change a glossary term | `terms` in `domains/<domain>/glossary.yaml` |
-| Declare a data product | `python tools/dgac.py new-product <domain> <id> <team>`, then fill it in |
-
-If the request is ambiguous, or a value is missing (an unknown team, a column without sensitivity),
-ask in the issue instead of guessing.
+- Never edit a file whose first line says `Generated`. Edit the card or the extension and run `generate`.
+- Never change a public interface in a breaking way: publish `<interface>_v<n+1>` with its own contract,
+  and deprecate the old one with an `endOfLife` at least 3 months away.
+- Read another domain only from `external/`, with `ref('<domain>', '<interface>', v=<n>)`.
+- Shared macros and seeds start with the product id and two underscores: `orders__margin`.
+- Never give an extension metric or dataset the name of a common one. A derived metric starts with
+  its parent's name and only adds filters.
+- People are work emails, teams are GitHub teams (`@org/team`). Ids are snake_case.
+- When unsure whether a column is personal data, classify it `restricted` and ask in the pull request.
+  The DPO decides.

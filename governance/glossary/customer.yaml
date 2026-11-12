@@ -1,0 +1,13 @@
+# Business terms of the Customer domain. Written by the domain's Data Steward,
+# approved by the central data governance team. Product cards link to them.
+domain: customer
+terms:
+  - id: customer
+    name: Customer
+    definition: A person who has created an account on lumen.example, whether or not they have ordered.
+    synonyms: [client, account holder]
+    status: approved
+  - id: country
+    name: Country of residence
+    definition: The country of the customer's main delivery address.
+    status: approved
