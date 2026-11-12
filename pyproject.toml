@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dgac"
+version = "1.0.0"
+description = "Data Governance as Code: the standard's tool (validate, generate, assemble, manifest)."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [{ name = "Maketools" }]
+dependencies = ["pyyaml>=6.0", "jsonschema>=4.18"]
+
+[project.optional-dependencies]
+# dbt Core on DuckDB with dbt-loom: what the example and `dgac build` use
+dbt = ["dbt-core==1.12.7", "dbt-duckdb==1.11.1", "dbt-loom==0.9.6"]
+test = ["pytest>=8.0"]
+
+[project.scripts]
+dgac = "dgac.cli:run"
+
+[project.urls]
+Repository = "https://github.com/maketools-company/datagovernance-as-code"
+
+[tool.hatch.build.targets.wheel]
+packages = ["dgac"]
+
+# The schemas ship inside the package, so `dgac` works in a domain repository without the hub's copy.
+[tool.hatch.build.targets.wheel.force-include]
+"schemas" = "dgac/schemas"
+
+[tool.hatch.build.targets.sdist]
+include = ["dgac", "schemas", "README.md", "LICENSE", "STANDARD.md", "RULES.md"]

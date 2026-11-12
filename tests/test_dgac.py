@@ -1,10 +1,9 @@
-"""Tests of tools/dgac.py on a copy of the example repository.
+"""Tests of the dgac tool on a copy of the example repository.
 
 Fast tests need only Python. Tests marked `dbt` run dbt on DuckDB (a few seconds each).
 """
 from __future__ import annotations
 
-import importlib.util
 import json
 import shutil
 import subprocess
@@ -15,12 +14,11 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-spec = importlib.util.spec_from_file_location("dgac", ROOT / "tools" / "dgac.py")
-dgac = importlib.util.module_from_spec(spec)
-sys.modules["dgac"] = dgac
-spec.loader.exec_module(dgac)
+sys.path.insert(0, str(ROOT))
+from dgac import cli as dgac  # noqa: E402
 
 DBT = Path(sys.executable).parent / "dbt"
+DGAC = Path(sys.executable).parent / "dgac"
 needs_dbt = pytest.mark.skipif(not DBT.exists(), reason="dbt is not installed")
 ORDERS = "domains/sales/dataproducts/orders"
 CUSTOMER = "domains/customer/dataproducts/customer_profile"
@@ -279,3 +277,49 @@ def test_build_then_compute_a_published_metric(repo_copy):
     sql = (f"select {expression} from {sources['orders']} as orders "
            f"join {sources['customers']} as customers on orders.customer_id = customers.customer_id")
     assert float(con.execute(sql).fetchone()[0]) == pytest.approx(759.90)
+
+
+# ---------------------------------------------------------------- dgac init and the installed command
+
+def test_init_removes_the_example_and_sets_the_hub_up(repo_copy):
+    assert run(repo_copy, "init", "--organisation", "Acme", "--central-team", "@acme/data-governance") == 0
+    assert not (repo_copy / "domains/customer").exists()
+    assert not (repo_copy / "governance/glossary/sales.yaml").exists()
+    assert not (repo_copy / "governance/semantic/common.ossie.yaml").exists()
+    hub = load(repo_copy, "governance/hub.yml")
+    assert hub["organisation"] == "Acme" and hub["central_team"] == "@acme/data-governance"
+    codeowners = (repo_copy / ".github/CODEOWNERS").read_text()
+    assert "/governance/  @acme/data-governance" in codeowners and "lumen" not in codeowners
+    repo = dgac.Repo(repo_copy)
+    assert dgac.validate(repo).errors == []
+    assert dgac.generate(repo, check=True) == 0
+    # the company can start at once
+    assert run(repo_copy, "new-domain", "finance", "--team", "@acme/finance-data") == 0
+    assert dgac.validate(dgac.Repo(repo_copy)).errors == []
+
+
+def test_init_refuses_a_repository_already_set_up(repo_copy):
+    assert run(repo_copy, "init", "--organisation", "Acme", "--central-team", "@acme/data-governance") == 0
+    assert run(repo_copy, "new-domain", "finance", "--team", "@acme/finance-data") == 0
+    assert run(repo_copy, "init", "--organisation", "Other", "--central-team", "@other/gov") == 1
+    assert (repo_copy / "domains/finance").exists()
+
+
+def test_an_extension_needs_the_common_model(repo_copy):
+    (repo_copy / "governance/semantic/common.ossie.yaml").unlink()
+    with pytest.raises(dgac.AssemblyError, match="does not exist yet"):
+        assembly(repo_copy)
+
+
+def test_schemas_ship_with_the_package(repo_copy):
+    shutil.rmtree(repo_copy / "schemas")          # a hub or domain repository without its own copy
+    assert dgac.schemas_folder(repo_copy).exists()
+    assert dgac.validate(dgac.Repo(repo_copy)).errors == []
+
+
+@pytest.mark.skipif(not DGAC.exists(), reason="dgac is not installed (pip install -e .)")
+def test_installed_command_finds_the_hub_from_a_subfolder():
+    result = subprocess.run([str(DGAC), "validate"], cwd=ROOT / "domains/sales/dataproducts",
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "2 domains, 2 data products" in result.stdout

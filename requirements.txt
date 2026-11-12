@@ -1,9 +1,0 @@
-# The standard's tool
-pyyaml>=6.0
-jsonschema>=4.18
-pytest>=8.0
-
-# The example: dbt Core on a local DuckDB file, cross-project references with dbt-loom
-dbt-core==1.12.7
-dbt-duckdb==1.11.1
-dbt-loom==0.9.6

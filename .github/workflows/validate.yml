@@ -14,18 +14,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r requirements.txt
+      - run: pip install ".[dbt,test]"
 
       - name: Check governance files against their schemas
-        run: python tools/dgac.py validate
+        run: dgac validate
       - name: Check generated files are up to date (CODEOWNERS, dbt groups, selectors, semantics)
-        run: python tools/dgac.py generate --check
+        run: dgac generate --check
       - name: Build every data product on its own, producers first (contracts enforced, tests run)
-        run: python tools/dgac.py build
+        run: dgac build
       - name: Assemble the semantic models (common model + extensions, private left out)
-        run: python tools/dgac.py assemble
+        run: dgac assemble
       - name: Write the governance manifest of each domain
-        run: python tools/dgac.py manifest
+        run: dgac manifest
       - name: Test the tool
         run: pytest -q tests
 
