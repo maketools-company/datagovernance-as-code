@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dgac"
-version = "1.0.0"
+version = "1.0.2"
 description = "Data Governance as Code: the standard's tool (validate, generate, assemble, manifest)."
 readme = "README.md"
 license = "Apache-2.0"
