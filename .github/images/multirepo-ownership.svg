@@ -1,0 +1,209 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 770" width="1200" height="770" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>One repository per domain: who owns what</title>
+  <style>
+    .bg{fill:#FBFAF7}
+    .ink{fill:#1F2328}.muted{fill:#656D76}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+    .card{fill:#FFFFFF;stroke:#E4E2DC}
+    .hub{fill:#EEEEFC;stroke:#C9C9F5}.hubc{fill:#4F4FCF}.hubs{stroke:#4F4FCF}
+    .cus{fill:#E3F4F1;stroke:#A9DCD3}.cusc{fill:#0B7F72}.cuss{stroke:#0B7F72}
+    .sal{fill:#FDEDE3;stroke:#F5C3A3}.salc{fill:#C94F0B}.sals{stroke:#C94F0B}
+    .pill{fill:#FFFFFF}.dot{fill:#FFFFFF}
+    .frame{stroke:#8A8F96}.framef{fill:#8A8F96}
+    .bucket{fill:#FFFFFF;stroke:#656D76}
+    @media (prefers-color-scheme: dark){
+      .bg{fill:#16181C}
+      .ink{fill:#E8E6E1}.muted{fill:#9AA1A9}
+      .card{fill:#1F2227;stroke:#33373E}
+      .hub{fill:#23234A;stroke:#3C3C7A}.hubc{fill:#A5A5F5}.hubs{stroke:#A5A5F5}
+      .cus{fill:#12312D;stroke:#1F5A52}.cusc{fill:#5FD3C2}.cuss{stroke:#5FD3C2}
+      .sal{fill:#3A2214;stroke:#6E3B1C}.salc{fill:#F5A06B}.sals{stroke:#F5A06B}
+      .pill{fill:#1F2227}.dot{fill:#16181C}
+      .frame{stroke:#9AA1A9}.framef{fill:#9AA1A9}
+      .bucket{fill:#1F2227;stroke:#9AA1A9}
+    }
+  </style>
+  <defs>
+    <marker id="arrH" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" class="hubc"/>
+    </marker>
+    <marker id="arrC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" class="cusc"/>
+    </marker>
+    <!-- repository glyph -->
+    <g id="repo">
+      <rect x="0" y="0" width="11" height="13" rx="2" fill="none" stroke-width="1.6" class="frame"/>
+      <line x1="3" y1="4" x2="8" y2="4" stroke-width="1.6" class="frame"/>
+    </g>
+  </defs>
+
+  <rect class="bg" width="1200" height="770" rx="20"/>
+
+  <text x="48" y="58" class="ink" font-size="22" font-weight="700">One repository per domain: who owns what</text>
+  <text x="48" y="84" class="muted" font-size="14">Each team writes only its own repository. The hub is shared: every data team reads it, only the central team writes it.</text>
+
+  <!-- ===== Hub repository ===== -->
+  <rect x="24" y="116" width="1152" height="144" rx="20" class="hub" stroke-width="1.5"/>
+  <g transform="translate(48,103)">
+    <rect width="290" height="26" rx="13" class="pill hubs" stroke-width="1.5"/>
+    <use href="#repo" x="12" y="6.5"/>
+    <text x="32" y="17.5" class="ink mono" font-size="12.5" font-weight="600">lumen-retail/data-governance-hub</text>
+  </g>
+
+  <text x="48" y="160" class="hubc" font-size="12" font-weight="700" letter-spacing="1.5">HUB</text>
+  <text x="88" y="160" class="ink mono" font-size="13">governance/ · schemas/ · dgac/</text>
+  <g transform="translate(346,143)">
+    <rect width="142" height="24" rx="12" class="pill hubs" stroke-width="1"/>
+    <path d="M10 7 h7 l5 5 l-5 5 h-7 z" fill="none" stroke-width="1.4" class="hubs"/>
+    <text x="30" y="16.5" class="ink mono" font-size="11.5">tag hub-v1.0.0</text>
+  </g>
+  <g transform="translate(617,140)" font-size="12.5">
+    <rect width="311" height="28" rx="14" class="pill hubs" stroke-width="1"/>
+    <circle cx="16" cy="14" r="8" class="hubc"/>
+    <text x="32" y="19" class="ink"><tspan class="mono">@lumen-retail/data-governance</tspan><tspan class="muted"> · write</tspan></text>
+  </g>
+  <g transform="translate(940,140)" font-size="12.5">
+    <rect width="188" height="28" rx="14" class="pill frame" stroke-width="1"/>
+    <circle cx="16" cy="14" r="8" fill="none" stroke-width="2" class="frame"/>
+    <text x="32" y="19" class="ink">every data team<tspan class="muted"> · read</tspan></text>
+  </g>
+
+  <g font-size="14">
+    <g transform="translate(48,184)">
+      <rect width="262" height="52" rx="10" class="card"/>
+      <circle cx="20" cy="20" r="4" class="hubc"/>
+      <text x="34" y="25" class="ink" font-weight="600">Classification</text>
+      <text x="34" y="42" class="muted mono" font-size="11.5">classification.yaml</text>
+    </g>
+    <g transform="translate(324,184)">
+      <rect width="262" height="52" rx="10" class="card"/>
+      <circle cx="20" cy="20" r="4" class="hubc"/>
+      <text x="34" y="25" class="ink" font-weight="600">Glossaries</text>
+      <text x="34" y="42" class="muted mono" font-size="11.5">glossary/{domain}.yaml</text>
+    </g>
+    <g transform="translate(600,184)">
+      <rect width="262" height="52" rx="10" class="card"/>
+      <circle cx="20" cy="20" r="4" class="hubc"/>
+      <text x="34" y="25" class="ink" font-weight="600">Common semantic model</text>
+      <text x="34" y="42" class="muted mono" font-size="11.5">semantic/common.ossie.yaml</text>
+    </g>
+    <g transform="translate(876,184)">
+      <rect width="252" height="52" rx="10" class="card"/>
+      <circle cx="20" cy="20" r="4" class="hubc"/>
+      <text x="34" y="25" class="ink" font-weight="600">dgac tool and schemas</text>
+      <text x="34" y="42" class="muted mono" font-size="11.5">requirements.txt, pinned</text>
+    </g>
+  </g>
+
+  <!-- ===== Hub checked out by each domain CI ===== -->
+  <g fill="none" stroke-width="1.8" stroke-dasharray="5 5" class="hubs">
+    <path d="M593 260 C593 330, 420 300, 420 362" marker-end="url(#arrH)"/>
+    <path d="M593 260 C593 330, 1060 300, 1060 362" marker-end="url(#arrH)"/>
+  </g>
+  <g transform="translate(418,290)">
+    <rect width="350" height="28" rx="14" class="pill hubs" stroke-width="1"/>
+    <text x="175" y="18.5" text-anchor="middle" class="muted" font-size="12">each domain CI checks out the hub at a pinned tag</text>
+  </g>
+
+  <!-- ===== Repository: customer ===== -->
+  <rect x="24" y="372" width="496" height="304" rx="20" class="cus" stroke-width="1.5"/>
+  <g transform="translate(48,359)">
+    <rect width="274" height="26" rx="13" class="pill cuss" stroke-width="1.5"/>
+    <use href="#repo" x="12" y="6.5"/>
+    <text x="32" y="17.5" class="ink mono" font-size="12.5" font-weight="600">lumen-retail/data-dbt-customer</text>
+  </g>
+  <text x="48" y="412" class="cusc" font-size="12" font-weight="700" letter-spacing="1.5">DOMAIN</text>
+  <text x="48" y="436" class="ink" font-size="19" font-weight="700">customer</text>
+  <g transform="translate(198,396)" font-size="12.5">
+    <rect width="298" height="28" rx="14" class="pill cuss" stroke-width="1"/>
+    <circle cx="16" cy="14" r="8" class="cusc"/>
+    <text x="32" y="19" class="ink"><tspan class="mono">@lumen-retail/customer-data</tspan><tspan class="muted"> · write</tspan></text>
+  </g>
+
+  <rect x="48" y="456" width="448" height="170" rx="12" class="card"/>
+  <text x="68" y="486" class="ink mono" font-size="15" font-weight="600">customer_profile</text>
+  <text x="68" y="506" class="muted" font-size="12">data product: ODPS card, ODCS contract, dbt models</text>
+
+  <line x1="92" y1="562" x2="572" y2="562" stroke-width="4" stroke-linecap="round" class="cuss"/>
+  <g class="cuss" stroke-width="3">
+    <circle cx="92" cy="562" r="7" class="dot"/>
+    <circle cx="192" cy="562" r="7" class="dot"/>
+    <circle cx="292" cy="562" r="7" class="dot"/>
+    <circle cx="410" cy="562" r="11" class="dot"/>
+  </g>
+  <circle cx="410" cy="562" r="5" class="cusc"/>
+  <g font-size="12" text-anchor="middle" class="muted">
+    <text x="92" y="592">staging</text>
+    <text x="192" y="592">silver</text>
+    <text x="292" y="592">gold</text>
+    <text x="410" y="594" class="ink" font-weight="600">public</text>
+    <text x="410" y="610" class="mono" font-size="11">customers_v1</text>
+  </g>
+  <text x="48" y="656" class="muted" font-size="12">its own CI (<tspan class="mono">validate.yml</tspan>), CODEOWNERS and <tspan class="mono">governance.yml</tspan></text>
+
+  <!-- ===== Shared manifest store ===== -->
+  <text x="600" y="508" text-anchor="middle" class="muted" font-size="11.5">CI publishes</text>
+  <text x="600" y="524" text-anchor="middle" class="ink mono" font-size="12" font-weight="600">manifest.json</text>
+  <g class="bucket" stroke-width="1.8">
+    <path d="M576 544 L576 580 A24 7 0 0 0 624 580 L624 544"/>
+    <ellipse cx="600" cy="544" rx="24" ry="7"/>
+  </g>
+  <text x="600" y="610" text-anchor="middle" class="muted" font-size="11.5">S3 · GCS · Azure</text>
+  <text x="600" y="626" text-anchor="middle" class="muted" font-size="11.5">or dbt Cloud</text>
+  <text x="652" y="550" text-anchor="middle" class="muted" font-size="11">dbt-loom</text>
+
+  <!-- ===== Repository: sales ===== -->
+  <rect x="680" y="372" width="496" height="304" rx="20" class="sal" stroke-width="1.5"/>
+  <g transform="translate(704,359)">
+    <rect width="252" height="26" rx="13" class="pill sals" stroke-width="1.5"/>
+    <use href="#repo" x="12" y="6.5"/>
+    <text x="32" y="17.5" class="ink mono" font-size="12.5" font-weight="600">lumen-retail/data-dbt-sales</text>
+  </g>
+  <text x="704" y="412" class="salc" font-size="12" font-weight="700" letter-spacing="1.5">DOMAIN</text>
+  <text x="704" y="436" class="ink" font-size="19" font-weight="700">sales</text>
+  <g transform="translate(877,396)" font-size="12.5">
+    <rect width="275" height="28" rx="14" class="pill sals" stroke-width="1"/>
+    <circle cx="16" cy="14" r="8" class="salc"/>
+    <text x="32" y="19" class="ink"><tspan class="mono">@lumen-retail/sales-data</tspan><tspan class="muted"> · write</tspan></text>
+  </g>
+
+  <rect x="776" y="456" width="376" height="170" rx="12" class="card"/>
+  <text x="796" y="486" class="ink mono" font-size="15" font-weight="600">orders</text>
+  <text x="796" y="506" class="muted" font-size="12">data product: ODPS card, ODCS contract, dbt</text>
+
+  <line x1="730" y1="562" x2="1100" y2="562" stroke-width="4" stroke-linecap="round" class="sals"/>
+  <g class="sals" stroke-width="3">
+    <circle cx="730" cy="562" r="9" class="dot" stroke-dasharray="3 3"/>
+    <circle cx="816" cy="562" r="7" class="dot"/>
+    <circle cx="908" cy="562" r="7" class="dot"/>
+    <circle cx="1000" cy="562" r="7" class="dot"/>
+    <circle cx="1100" cy="562" r="11" class="dot"/>
+  </g>
+  <circle cx="1100" cy="562" r="5" class="salc"/>
+  <g font-size="12" text-anchor="middle" class="muted">
+    <text x="730" y="594" class="mono" font-size="11">external/</text>
+    <text x="730" y="609" class="mono" font-size="11">customer</text>
+    <text x="816" y="592">staging</text>
+    <text x="908" y="592">silver</text>
+    <text x="1000" y="592">gold</text>
+    <text x="1100" y="594" class="ink" font-weight="600">public</text>
+    <text x="1100" y="610" class="mono" font-size="11">orders_v1</text>
+  </g>
+  <text x="704" y="656" class="muted" font-size="12"><tspan class="mono">dbt_loom.config.yml</tspan> points to the producer's manifest</text>
+
+  <path d="M624 562 L716 562" fill="none" stroke-width="2.5" class="cuss" marker-end="url(#arrC)"/>
+
+  <!-- ===== Legend ===== -->
+  <g transform="translate(48,726)" font-size="12.5" class="muted">
+    <circle cx="8" cy="0" r="6" class="dot cuss" stroke-width="2.5"/>
+    <text x="22" y="4.5">dbt layer</text>
+    <circle cx="106" cy="0" r="9" class="dot cuss" stroke-width="2.5"/><circle cx="106" cy="0" r="4" class="cusc"/>
+    <text x="123" y="4.5">public interface, under contract</text>
+    <circle cx="352" cy="0" r="8" class="dot sals" stroke-width="2.5" stroke-dasharray="3 3"/>
+    <text x="368" y="4.5">model from another domain</text>
+    <use href="#repo" x="568" y="-6.5"/>
+    <text x="588" y="4.5">GitHub repository</text>
+    <circle cx="726" cy="0" r="7" class="cusc"/>
+    <text x="740" y="4.5">team and its access to the repository</text>
+  </g>
+</svg>

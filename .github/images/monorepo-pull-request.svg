@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="1200" height="460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>The life of a pull request</title>
+  <style>
+    .bg{fill:#FBFAF7}
+    .ink{fill:#1F2328}.muted{fill:#656D76}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+    .card{fill:#FFFFFF;stroke:#E4E2DC}
+    .ci{stroke:#4F4FCF}.cic{fill:#4F4FCF}
+    .rv{stroke:#0B7F72}.rvc{fill:#0B7F72}
+    .sal{stroke:#C94F0B}.salc{fill:#C94F0B}
+    .opt{stroke:#9AA1A9}
+    .dark{fill:#1F2328}.onDark{fill:#FFFFFF}
+    .pill{fill:#FFFFFF}.dot{fill:#FFFFFF}
+    @media (prefers-color-scheme: dark){
+      .bg{fill:#16181C}
+      .ink{fill:#E8E6E1}.muted{fill:#9AA1A9}
+      .card{fill:#1F2227;stroke:#33373E}
+      .ci{stroke:#A5A5F5}.cic{fill:#A5A5F5}
+      .rv{stroke:#5FD3C2}.rvc{fill:#5FD3C2}
+      .sal{stroke:#F5A06B}.salc{fill:#F5A06B}
+      .opt{stroke:#656D76}
+      .dark{fill:#E8E6E1}.onDark{fill:#16181C}
+      .pill{fill:#1F2227}.dot{fill:#16181C}
+    }
+  </style>
+
+  <rect class="bg" width="1200" height="460" rx="20"/>
+
+  <text x="48" y="58" class="ink" font-size="22" font-weight="700">The life of a pull request</text>
+  <text x="48" y="84" class="muted" font-size="14">Two conditions to merge: CI is green, and every team that owns a changed folder has approved.</text>
+
+  <!-- tracks -->
+  <g fill="none" stroke-width="4" stroke-linecap="round">
+    <path d="M196 250 C236 250, 236 180, 276 180 L900 180 C940 180, 940 250, 980 250" class="ci"/>
+    <path d="M196 250 C236 250, 236 330, 276 330 L900 330 C940 330, 940 250, 980 250" class="rv"/>
+  </g>
+
+  <!-- start -->
+  <g transform="translate(48,224)">
+    <rect width="148" height="52" rx="26" class="card" stroke-width="1.5"/>
+    <text x="74" y="23" text-anchor="middle" class="ink" font-size="14" font-weight="700">Pull request</text>
+    <text x="74" y="40" text-anchor="middle" class="muted" font-size="11.5">e.g. a new column</text>
+  </g>
+
+  <!-- CI track -->
+  <text x="276" y="128" class="cic" font-size="12" font-weight="700" letter-spacing="1.5">CI</text>
+  <text x="300" y="128" class="muted" font-size="12">no warehouse, no secret: dbt only parses</text>
+  <g class="ci" stroke-width="3">
+    <circle cx="290" cy="180" r="8" class="dot"/>
+    <circle cx="430" cy="180" r="8" class="dot"/>
+    <circle cx="570" cy="180" r="8" class="dot"/>
+    <circle cx="710" cy="180" r="8" class="dot"/>
+    <circle cx="850" cy="180" r="8" class="dot"/>
+  </g>
+  <g text-anchor="middle" font-size="12">
+    <text x="290" y="160" class="ink mono" font-weight="600">validate</text>
+    <text x="430" y="160" class="ink mono" font-weight="600">generate --check</text>
+    <text x="570" y="160" class="ink mono" font-weight="600">build --parse-only</text>
+    <text x="710" y="160" class="ink mono" font-weight="600">assemble</text>
+    <text x="850" y="160" class="ink mono" font-weight="600">manifest</text>
+  </g>
+  <g text-anchor="middle" font-size="12" class="muted">
+    <text x="290" y="208">cards, contracts,</text><text x="290" y="223">glossaries are valid</text>
+    <text x="430" y="208">CODEOWNERS, dbt groups</text><text x="430" y="223">are up to date</text>
+    <text x="570" y="208">producers first,</text><text x="570" y="223">private refs refused</text>
+    <text x="710" y="208">semantic model,</text><text x="710" y="223">private left out</text>
+    <text x="850" y="208">governance manifest</text><text x="850" y="223">per domain</text>
+  </g>
+
+  <!-- Review track -->
+  <text x="276" y="314" class="rvc" font-size="12" font-weight="700" letter-spacing="1.5">REVIEW</text>
+  <g class="rv" stroke-width="3"><circle cx="600" cy="330" r="10" class="dot"/></g>
+  <circle cx="600" cy="330" r="4.5" class="rvc"/>
+  <text x="600" y="310" text-anchor="middle" class="ink" font-size="13" font-weight="600">CODEOWNERS approval</text>
+  <g font-size="12" class="mono">
+    <g transform="translate(243,356)">
+      <rect width="248" height="26" rx="13" class="pill ci" stroke-width="1"/>
+      <circle cx="14" cy="13" r="6.5" class="cic"/>
+      <text x="27" y="17.5" class="ink">@lumen-retail/data-governance</text>
+    </g>
+    <g transform="translate(501,356)">
+      <rect width="233" height="26" rx="13" class="pill rv" stroke-width="1"/>
+      <circle cx="14" cy="13" r="6.5" class="rvc"/>
+      <text x="27" y="17.5" class="ink">@lumen-retail/customer-data</text>
+    </g>
+    <g transform="translate(744,356)">
+      <rect width="212" height="26" rx="13" class="pill sal" stroke-width="1"/>
+      <circle cx="14" cy="13" r="6.5" class="salc"/>
+      <text x="27" y="17.5" class="ink">@lumen-retail/sales-data</text>
+    </g>
+  </g>
+  <text x="600" y="404" text-anchor="middle" class="muted" font-size="12">only the teams whose folders change</text>
+
+  <!-- merge -->
+  <g transform="translate(980,224)">
+    <rect width="176" height="52" rx="26" class="dark"/>
+    <path d="M24 26 l6 6 l12 -13" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="rv"/>
+    <text x="50" y="31" class="onDark" font-size="14" font-weight="700">Merge to main</text>
+  </g>
+
+  <!-- optional publish -->
+  <path d="M1068 276 L1068 336" fill="none" stroke-width="2" stroke-dasharray="4 5" class="opt"/>
+  <g transform="translate(980,336)">
+    <rect width="176" height="56" rx="12" class="card" stroke-dasharray="4 4"/>
+    <text x="88" y="24" text-anchor="middle" class="ink mono" font-size="12" font-weight="600">publish-manifest</text>
+    <text x="88" y="42" text-anchor="middle" class="muted" font-size="11.5">to a catalog (optional)</text>
+  </g>
+</svg>

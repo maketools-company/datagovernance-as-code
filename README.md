@@ -176,19 +176,25 @@ It requires a pull request, one approval from the code owners of every changed f
 
 **What it does not give you.** In a single repository every team can *read* every domain's code; GitHub cannot hide a folder. The Data Owner's and the committee's approvals (GOV-A01 to A04) are collected outside GitHub in V1. Access to the data itself (warehouse grants, masking) is out of the standard's scope.
 
+## Monorepo
+
+This template is a monorepo: one GitHub repository holds the hub and every domain, as folders. Each team approves the changes to its own folders (CODEOWNERS), and every team can read all the code.
+
+![The monorepo: who owns what](.github/images/monorepo-ownership.svg)
+
+A pull request merges once CI is green and every team that owns a changed folder has approved:
+
+![The life of a pull request](.github/images/monorepo-pull-request.svg)
+
 ## One repository per domain
 
 The monorepo is the easiest way to start, and the standard accepts it. A federated company that wants each team to see and write only its own code splits it:
 
-```
-acme/data-governance-hub      governance/, schemas/, dgac/    Write: central team · Read: every data team
-acme/data-dbt-finance         one domain, same layout         Write: @acme/finance-data
-acme/data-dbt-sales           one domain, same layout         Write: @acme/sales-data
-```
+![One repository per domain: who owns what](.github/images/multirepo-ownership.svg)
 
 1. **The hub.** Create it from this template, run `dgac init`, and tag a release (`git tag hub-v1.0.0`). Domains pin a release, so a change to the hub reaches them when they choose.
 2. **A domain.** From the hub, `dgac new-domain finance --team @acme/finance-data --repo ..` creates `../data-dbt-finance`, with its own CI, CODEOWNERS and README. Push it as a new repository, then:
-   - in `.github/workflows/validate.yml`, set the hub repository and the release tag (the two `TODO` lines); the domain's CI installs the tool the hub pins in `requirements.txt`;
+   - in `.github/workflows/validate.yml`, set the release tag of the hub (the `TODO` line). The hub repository is read from the hub's `origin` remote; if the hub has none, set it too. The domain's CI installs the tool the hub pins in `requirements.txt`;
    - add a secret `HUB_READ_TOKEN`: a token that can read the hub (a fine-grained token, or a GitHub App), because the default CI token cannot read another private repository.
 3. **Reading another domain.** dbt-loom needs the producer's `target/manifest.json`. The domain CI uploads it as an artifact; for daily use, copy it to a bucket that dbt-loom reads directly (S3, GCS, Azure, or dbt Cloud) and point `dbt_loom.config.yml` to it.
 4. **Who reads whom.** In a monorepo, `dgac manifest` sees every domain and lists the consumers of each interface. Across repositories each manifest lists what its domain reads; collect the manifests in one place to know the consumers.

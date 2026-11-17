@@ -1149,7 +1149,22 @@ def new_domain(repo: Repo, domain: str, team: str, repo_path: Path | None) -> in
     return 0
 
 
+def hub_github_repo(repo: Repo) -> str | None:
+    """owner/name of the hub on GitHub, read from its `origin` remote (None when it has none)."""
+    try:
+        url = subprocess.run(["git", "remote", "get-url", "origin"], cwd=repo.hub_root,
+                             capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    m = re.match(r"^(?:git@github\.com:|ssh://git@github\.com/|https://(?:[^@/]+@)?github\.com/)"
+                 r"([\w.-]+/[\w.-]+?)(?:\.git)?/?$", url)
+    return m.group(1) if m else None
+
+
 def domain_workflow_text(repo: Repo, domain: str) -> str:
+    hub = hub_github_repo(repo)
+    hub_line = (f"repository: {hub}" if hub else
+                "repository: your-org/data-governance-hub   # TODO: your hub repository")
     return f"""# Governance check of the {domain} domain, on every pull request. A failing step blocks the merge.
 # It needs no warehouse: dbt only parses the project (no data is read, no secret is needed).
 # The tool and the standard come from the hub repository, at the version you pin below.
@@ -1167,7 +1182,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
-          repository: your-org/data-governance-hub   # TODO: your hub repository
+          {hub_line}
           ref: main                                  # TODO: pin a release tag of the hub
           path: hub
           token: ${{{{ secrets.HUB_READ_TOKEN }}}}     # a private hub needs a token that can read it
