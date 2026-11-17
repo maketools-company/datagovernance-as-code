@@ -1,10 +1,15 @@
 # Runs on every pull request. A failing step blocks the merge.
+# It needs no warehouse and no secret: dbt only parses the projects. Keep building and testing your
+# models in the CI you already have (or dbt Cloud); see the README, "Connect your warehouse".
 name: validate
 
 on:
   pull_request:
   push:
     branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   validate:
@@ -14,19 +19,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ".[dbt,test]"
+      - name: Install the standard's tool (the pinned release in requirements.txt, or the source kept here)
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install ".[dbt,test]"; fi
 
       - name: Check governance files against their schemas
         run: dgac validate
       - name: Check generated files are up to date (CODEOWNERS, dbt groups, selectors, semantics)
         run: dgac generate --check
-      - name: Build every data product on its own, producers first (contracts enforced, tests run)
-        run: dgac build
+      - name: Parse every domain, producers first (groups, access, versions, cross-domain references)
+        run: dgac build --parse-only
       - name: Assemble the semantic models (common model + extensions, private left out)
         run: dgac assemble
       - name: Write the governance manifest of each domain
         run: dgac manifest
-      - name: Test the tool
+      - name: Test the tool (the template's own tests; removed by dgac init)
+        if: ${{ hashFiles('tests/test_dgac.py') != '' }}
         run: pytest -q tests
 
       - uses: actions/upload-artifact@v4

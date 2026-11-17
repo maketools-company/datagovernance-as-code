@@ -8,6 +8,7 @@
   "properties": {
     "standard_version": {"const": "1.0"},
     "domain": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+    "dbt_project": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$", "description": "Name of the dbt project when it differs from the domain (an adopted project keeps its name)."},
     "team": {"type": "string", "pattern": "^@[A-Za-z0-9-]+/[A-Za-z0-9._-]+$", "description": "Domain team (GitHub team). Reviews the domain folder outside its data products."},
     "target_level": {"enum": [1, 2, 3]},
     "common_semantic_model_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},

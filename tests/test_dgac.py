@@ -5,6 +5,7 @@ Fast tests need only Python. Tests marked `dbt` run dbt on DuckDB (a few seconds
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -256,10 +257,30 @@ def test_new_domain_parses_in_dbt_without_warnings(repo_copy):
     run(repo_copy, "new-domain", "inventory", "--team", "@lumen-retail/inventory-data")
     run(repo_copy, "new-product", "inventory", "daily_stock", "--team", "@lumen-retail/stock",
         "--owner", "nina.roux@lumen.example", "--steward", "omar.diallo@lumen.example")
-    result = subprocess.run([str(DBT), "parse", "--no-partial-parse"], cwd=repo_copy / "domains/inventory",
-                            capture_output=True, text=True)
+    result = parse(repo_copy, "inventory")
     assert result.returncode == 0, result.stdout
     assert "WARN" not in result.stdout, result.stdout
+
+
+def parse(hub: Path, domain: str, domain_dirs=None) -> subprocess.CompletedProcess:
+    """dbt parse with the throwaway profile of `dgac build --parse-only`, output captured."""
+    d = dgac.Repo(hub, domain_dirs).domain(domain)
+    folder = d.path / "target" / "dgac-profile"
+    folder.mkdir(parents=True, exist_ok=True)
+    dgac.parse_profile(d, folder)
+    return subprocess.run([str(DBT), "parse", "--no-partial-parse"], cwd=d.path, capture_output=True, text=True,
+                          env={**os.environ, "DBT_PROFILES_DIR": str(folder)})
+
+
+@needs_dbt
+def test_parse_only_needs_no_warehouse(repo_copy):
+    assert run(repo_copy, "build", "--parse-only") == 0
+    assert not (repo_copy / "build/warehouse.duckdb").exists()
+    assert run(repo_copy, "manifest") == 0
+    sales = json.loads((repo_copy / "build/sales/governance-manifest.json").read_text())
+    orders = sales["products"][0]
+    assert orders["interfaces"][0]["relation"] is None          # unknown without a warehouse, never a fake name
+    assert orders["reads_from"][0]["contractId"] == "customer-customers-v1"
 
 
 @needs_dbt
@@ -290,6 +311,12 @@ def test_init_removes_the_example_and_sets_the_hub_up(repo_copy):
     assert hub["organisation"] == "Acme" and hub["central_team"] == "@acme/data-governance"
     codeowners = (repo_copy / ".github/CODEOWNERS").read_text()
     assert "/governance/  @acme/data-governance" in codeowners and "lumen" not in codeowners
+    # the tool is installed from a pinned release; its source and tests leave the company's repository
+    for name in ("dgac", "schemas", "tests", "pyproject.toml"):
+        assert not (repo_copy / name).exists(), name
+    assert "/requirements.txt  @acme/data-governance" in codeowners and "/dgac/" not in codeowners
+    requirements = (repo_copy / "requirements.txt").read_text()
+    assert f"datagovernance-as-code@v{dgac.__version__}" in requirements
     repo = dgac.Repo(repo_copy)
     assert dgac.validate(repo).errors == []
     assert dgac.generate(repo, check=True) == 0
@@ -323,3 +350,117 @@ def test_installed_command_finds_the_hub_from_a_subfolder():
                             capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
     assert "2 domains, 2 data products" in result.stdout
+
+
+def test_init_can_keep_the_tool(repo_copy):
+    assert run(repo_copy, "init", "--organisation", "Acme", "--central-team", "@acme/gov", "--keep-tool") == 0
+    assert (repo_copy / "dgac").is_dir() and (repo_copy / "pyproject.toml").exists()
+    assert not (repo_copy / "tests").exists() and not (repo_copy / "requirements.txt").exists()
+    assert "/dgac/  @acme/gov" in (repo_copy / ".github/CODEOWNERS").read_text()
+
+
+def test_new_domain_repository_leaves_the_hub_codeowners_alone(repo_copy, tmp_path):
+    before = (repo_copy / ".github/CODEOWNERS").read_text()
+    assert run(repo_copy, "new-domain", "marketing", "--team", "@lumen-retail/marketing-data",
+               "--repo", str(tmp_path)) == 0
+    assert (repo_copy / ".github/CODEOWNERS").read_text() == before
+    assert not (tmp_path / "data-dbt-marketing/profiles.yml").exists()   # the company's warehouse, not ours
+
+
+# ---------------------------------------------------------------- dgac adopt
+
+EXISTING_PROJECT = """name: acme_analytics
+version: "1.0.0"
+profile: acme_analytics
+model-paths: ["models"]
+
+models:
+  acme_analytics:
+    marts:
+      +materialized: table
+"""
+
+
+@pytest.fixture
+def existing_project(tmp_path) -> Path:
+    """A dbt project as companies have them: its own name, models/, selectors and CODEOWNERS."""
+    root = tmp_path / "analytics"
+    (root / "models/marts").mkdir(parents=True)
+    (root / "dbt_project.yml").write_text(EXISTING_PROJECT)
+    (root / "models/marts/fct_invoices.sql").write_text("select 1 as invoice_id\n")
+    (root / "models/marts/fct_payments.sql").write_text("select invoice_id from {{ ref('fct_invoices') }}\n")
+    (root / "selectors.yml").write_text("selectors:\n  - name: nightly\n    definition: {method: tag, value: nightly}\n")
+    (root / ".github").mkdir()
+    (root / ".github/CODEOWNERS").write_text("*  @acme/analytics-engineers\n/models/marts/  @acme/finance-data\n")
+    return root
+
+
+def adopt_finance(hub: Path, project: Path) -> None:
+    assert run(hub, "--domain", str(project), "adopt", "finance", "--team", "@acme/finance-data",
+               "--path", str(project)) == 0
+    assert run(hub, "--domain", str(project), "new-product", "finance", "invoicing", "--team", "@acme/billing",
+               "--owner", "a@acme.example", "--steward", "b@acme.example") == 0
+
+
+def test_adopt_keeps_the_project_and_its_files(repo_copy, existing_project):
+    adopt_finance(repo_copy, existing_project)
+    gov = load(existing_project, "governance.yml")
+    assert gov["domain"] == "finance" and gov["dbt_project"] == "acme_analytics"
+    project = load(existing_project, "dbt_project.yml")
+    assert project["model-paths"] == ["models", "dataproducts", "external"]
+    assert project["models"]["acme_analytics"]["marts"] == {"+materialized": "table"}
+    assert project["models"]["acme_analytics"]["invoicing"] == {"+group": "invoicing"}
+    assert "+access" not in project["models"]["acme_analytics"]      # nothing becomes private behind their back
+    assert (existing_project / "selectors.yml").read_text().startswith("selectors:\n  - name: nightly")
+    codeowners = (existing_project / ".github/CODEOWNERS").read_text()
+    assert codeowners.startswith("*  @acme/analytics-engineers\n/models/marts/  @acme/finance-data\n")
+    assert codeowners.rstrip().endswith("/dataproducts/invoicing/  @acme/billing\n" + dgac.BLOCK_END)
+    assert (existing_project / ".github/workflows/governance.yml").exists()
+    repo = dgac.Repo(repo_copy, [existing_project])
+    assert dgac.validate(repo).errors == []
+    assert dgac.generate(repo, check=True) == 0
+    # a second generate keeps one block
+    assert run(repo_copy, "--domain", str(existing_project), "generate") == 0
+    assert (existing_project / ".github/CODEOWNERS").read_text().count(dgac.BLOCK_START) == 1
+
+
+def test_adopt_refuses_a_folder_without_dbt_project(repo_copy, tmp_path):
+    assert run(repo_copy, "adopt", "finance", "--team", "@acme/finance-data", "--path", str(tmp_path)) == 1
+
+
+def test_new_product_explains_a_project_without_markers(repo_copy, existing_project):
+    (existing_project / "governance.yml").write_text(dgac.governance_text("finance", "@acme/x", "1.0.0", "acme_analytics"))
+    assert run(repo_copy, "--domain", str(existing_project), "new-product", "finance", "invoicing",
+               "--team", "@acme/billing", "--owner", "a@acme.example", "--steward", "b@acme.example") == 1
+    assert not (existing_project / "dataproducts/invoicing").exists()
+
+
+def test_validate_names_the_dbt_project_of_an_adopted_domain(repo_copy, existing_project):
+    adopt_finance(repo_copy, existing_project)
+    gov = load(existing_project, "governance.yml")
+    gov.pop("dbt_project")
+    save(existing_project, "governance.yml", gov)
+    errors = dgac.validate(dgac.Repo(repo_copy, [existing_project])).errors
+    assert any("Add `dbt_project: acme_analytics`" in e for e in errors), errors
+
+
+def test_adopt_in_the_monorepo(repo_copy, existing_project):
+    target = repo_copy / "domains/finance"
+    shutil.copytree(existing_project, target, ignore=shutil.ignore_patterns(".github"))
+    assert run(repo_copy, "adopt", "finance", "--team", "@lumen-retail/finance-data") == 0
+    assert "/domains/finance/  @lumen-retail/finance-data" in (repo_copy / ".github/CODEOWNERS").read_text()
+    assert not (target / ".github").exists()          # the monorepo's CI and CODEOWNERS cover it
+    assert dgac.validate(dgac.Repo(repo_copy)).errors == []
+
+
+@needs_dbt
+def test_adopted_project_parses_after_moving_models(repo_copy, existing_project):
+    adopt_finance(repo_copy, existing_project)
+    product = existing_project / "dataproducts/invoicing/gold"
+    for name in ("fct_invoices.sql", "fct_payments.sql"):
+        (existing_project / "models/marts" / name).rename(product / name)
+    result = parse(repo_copy, "finance", [existing_project])
+    assert result.returncode == 0, result.stdout
+    manifest = json.loads((existing_project / "target/manifest.json").read_text())
+    node = manifest["nodes"]["model.acme_analytics.fct_payments"]
+    assert node["group"] == "invoicing"

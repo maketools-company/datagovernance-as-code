@@ -13,6 +13,7 @@ Sales reads Customer's public interface and derives `revenue_france` from the co
 pip install -e ".[dbt]"   # installs the `dgac` command, with dbt Core, DuckDB and dbt-loom
 dgac validate             # every governance file against its schema
 dgac build                # dbt builds each data product on its own, producers first (local DuckDB)
+                          # (CI runs `dgac build --parse-only`: no warehouse needed)
 dgac assemble             # common semantic model + each product's extension → plain Ossie
 dgac manifest             # build/<domain>/governance-manifest.json
 ```
@@ -30,9 +31,13 @@ Open `build/sales/governance-manifest.json`: owners, interfaces, contracts, what
    ```
 
    This deletes the Lumen Retail domains, their glossaries and the example's common semantic model, and regenerates CODEOWNERS.
+   It also replaces the tool's source (`dgac/`, `schemas/`, `tests/`, `pyproject.toml`) with `requirements.txt`, which pins a release of the tool (see [Upgrade the tool](#upgrade-the-tool)). Reinstall it: `pip install -r requirements.txt`.
 3. Review the sensitivity levels in `governance/classification.yaml`.
 4. Create your domains and data products (see [For domain teams](#for-domain-teams)). Start small: one domain, two products.
+   Already have a dbt project? Start from it instead: see [Adopt an existing dbt project](#adopt-an-existing-dbt-project).
 5. Protect `main` (see [Access and branch protection](#access-and-branch-protection)). Without it, nothing is enforced.
+
+The governance check in CI never connects to your warehouse (see [Connect your warehouse](#connect-your-warehouse)): the central team needs no warehouse access to run it.
 
 ## What's inside
 
@@ -54,6 +59,7 @@ domains/{domain}/               one dbt project per domain (or one repository: d
 
 schemas/                        what CI validates (the standard's schemas, ODCS, ODPS, Ossie)
 dgac/                           the standard's tool (Python package, `pip install`)
+                                after `dgac init`, both come from the release pinned in requirements.txt
 STANDARD.md · RULES.md          the standard and its 37 rules
 ```
 
@@ -71,7 +77,7 @@ Files marked `Generated` in their first line come from the cards and extensions:
 
 The template declares level 1. Its two example products meet level 3.
 
-**Create a domain.** `dgac new-domain finance --team @acme/finance-data` creates `domains/finance/` (a dbt project) and `governance/glossary/finance.yaml`.
+**Create a domain.** `dgac new-domain finance --team @acme/finance-data` creates `domains/finance/` (a dbt project) and `governance/glossary/finance.yaml`. Its dbt profile is `finance`: define it for your warehouse (see [Connect your warehouse](#connect-your-warehouse)).
 
 **Add a data product.**
 
@@ -104,6 +110,47 @@ metrics:
 ```
 
 Metrics built on internal layers are `private: true`: the domain computes them, other domains never see them. Changing the common model needs the governance committee (GOV-A04).
+
+## Adopt an existing dbt project
+
+You do not need to start from an empty project. `dgac adopt` sets the standard up on the dbt project you already have, and moves, renames and deletes nothing.
+
+```bash
+# the project in its own repository: run it there, with a copy of the hub next to it
+dgac --hub ../hub --domain . adopt finance --team @acme/finance-data
+# or the project copied into the monorepo, as domains/finance/
+dgac adopt finance --team @acme/finance-data
+```
+
+It adds `governance.yml`, the `dataproducts/` and `external/` zones (appended to `model-paths`), `.dbtignore`, `dbt_loom.config.yml` and the domain's glossary. The project keeps its name: `governance.yml` records it as `dbt_project`. Your `selectors.yml` is kept. An existing `CODEOWNERS` keeps its lines; the generated ones go in a delimited block at its end. In a repository of its own, the project also gets `.github/workflows/governance.yml`.
+
+Then reach level 1, one data product at a time:
+
+1. `dgac new-product finance invoicing --team ... --owner ... --steward ...` creates the folder, the card and the dbt group.
+2. Move the product's models into it: `git mv models/marts/finance/fct_invoices.sql dataproducts/invoicing/gold/`. A model keeps its name, so every `ref()` still works. Keep your subfolders if you prefer them to `staging/`, `silver/`, `gold/`; the layers matter at level 2.
+3. **Settings given by folder in `dbt_project.yml` (`+materialized`, `+schema`, `+tags`...) do not follow a moved model.** Copy them under the product's block, `models: <project>: invoicing:`. To check nothing changed, compare before and after the move:
+
+   ```bash
+   dbt ls --resource-type model --output json --output-keys "name config" > before.json
+   ```
+
+   dbt also warns about "configuration paths ... which do not apply to any resources" once a folder is empty.
+4. `dgac validate && dgac build --parse-only`, and open a pull request.
+
+Leave the project's models in `models/` until their product is identified: level 1 asks every model to belong to a product (GOV-109), but nothing breaks meanwhile. Do not make models private (`+access: private`) before level 2: a private model can only be read inside its group.
+
+A single dbt project for the whole company is a centralised organisation in the standard's terms: adopt it as one domain with several products, and split it into domains later if you need to.
+
+## Connect your warehouse
+
+The required check (`validate`) never reads data. `dgac build --parse-only` runs `dbt parse` with a throwaway DuckDB profile under your profile's name: no warehouse, no secret, no adapter to install. It checks what the governance needs (groups, access, versions, cross-domain references) and writes the dbt manifest the governance manifest reads. Only the physical table names (`relation`) stay empty.
+
+Keep building and testing your models where you do today: your CI, your orchestrator or dbt Cloud. To build with `dgac build` (producers first, one product at a time):
+
+- install your adapter (`pip install dbt-snowflake`, `dbt-bigquery`, `dbt-databricks`...);
+- give dbt its profile as usual, in `~/.dbt/profiles.yml` or a folder named by `DBT_PROFILES_DIR`, with secrets read through `env_var()`. A `profiles.yml` inside a domain folder wins over both: the example's domains have one, for DuckDB.
+
+If your project has `packages.yml` or `dependencies.yml`, dgac runs `dbt deps` first. A model that calls `env_var()` without a default needs that variable in CI, even to parse. In a repository per domain, dbt-loom must reach the producers' manifests: give the CI the credentials of the bucket that holds them.
 
 ## Access and branch protection
 
@@ -141,10 +188,22 @@ acme/data-dbt-sales           one domain, same layout         Write: @acme/sales
 
 1. **The hub.** Create it from this template, run `dgac init`, and tag a release (`git tag hub-v1.0.0`). Domains pin a release, so a change to the hub reaches them when they choose.
 2. **A domain.** From the hub, `dgac new-domain finance --team @acme/finance-data --repo ..` creates `../data-dbt-finance`, with its own CI, CODEOWNERS and README. Push it as a new repository, then:
-   - in `.github/workflows/validate.yml`, set the hub repository and the release tag (the two `TODO` lines);
+   - in `.github/workflows/validate.yml`, set the hub repository and the release tag (the two `TODO` lines); the domain's CI installs the tool the hub pins in `requirements.txt`;
    - add a secret `HUB_READ_TOKEN`: a token that can read the hub (a fine-grained token, or a GitHub App), because the default CI token cannot read another private repository.
 3. **Reading another domain.** dbt-loom needs the producer's `target/manifest.json`. The domain CI uploads it as an artifact; for daily use, copy it to a bucket that dbt-loom reads directly (S3, GCS, Azure, or dbt Cloud) and point `dbt_loom.config.yml` to it.
 4. **Who reads whom.** In a monorepo, `dgac manifest` sees every domain and lists the consumers of each interface. Across repositories each manifest lists what its domain reads; collect the manifests in one place to know the consumers.
+
+## Upgrade the tool
+
+After `dgac init`, your repository holds your governance, not the tool. `requirements.txt` pins a release of `dgac`, which brings the schemas with it:
+
+```
+dgac[dbt] @ git+https://github.com/maketools-company/datagovernance-as-code@v1.0.0
+```
+
+To upgrade, change the tag, run `pip install -r requirements.txt`, `dgac validate` and `dgac generate`, and open a pull request: the central team approves it (`requirements.txt` is theirs in CODEOWNERS). `dgac --version` shows the installed version.
+
+If your CI cannot reach GitHub, keep a copy of the tool in the repository instead: `dgac init --keep-tool`. It then installs from `pyproject.toml`, and you upgrade by copying `dgac/` and `schemas/` from a newer release.
 
 ## Built on standards
 

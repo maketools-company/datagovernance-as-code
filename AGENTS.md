@@ -16,10 +16,12 @@ Read the files directly. After a build, `build/<domain>/governance-manifest.json
 
 ## Making a change
 
-1. Use the tool to create things: `dgac new-domain`, `new-product`, `new-interface` (install with `pip install -e ".[dbt]"`).
+1. Use the tool to create things: `dgac new-domain`, `new-product`, `new-interface`, or `dgac adopt` for an
+   existing dbt project (install with `pip install -r requirements.txt`, or `pip install -e ".[dbt]"` in the template).
    Otherwise follow the closest existing example; do not invent fields.
 2. Run `dgac generate`, then `dgac validate`. Fix every error.
-3. If you changed dbt models, run `dgac build`.
+3. If you changed dbt models, run `dgac build --parse-only` (no warehouse needed). Run `dgac build` only if a
+   dbt profile for the warehouse is set up.
 4. Open a pull request. Never merge it yourself. Say in its description when it needs the Data Owner
    (new public interface, new major version, change of classification) or the governance committee
    (common semantic model).
