@@ -199,6 +199,32 @@ The monorepo is the easiest way to start, and the standard accepts it. A federat
 3. **Reading another domain.** dbt-loom needs the producer's `target/manifest.json`. The domain CI uploads it as an artifact; for daily use, copy it to a bucket that dbt-loom reads directly (S3, GCS, Azure, or dbt Cloud) and point `dbt_loom.config.yml` to it.
 4. **Who reads whom.** In a monorepo, `dgac manifest` sees every domain and lists the consumers of each interface. Across repositories each manifest lists what its domain reads; collect the manifests in one place to know the consumers.
 
+## Both at once, and moving a domain into the hub
+
+A hub can hold some domains in `domains/` and leave others in their own repositories: dgac treats each domain by where it lives. `dgac new-domain x` creates one in the hub, `dgac new-domain x --repo ..` one in its own repository. Domains read each other through dbt-loom as usual: a domain in the hub that another repository reads publishes its dbt manifest too (a bucket, or `publish-manifest.yml`).
+
+To move a domain from its repository into the hub:
+
+1. Copy the repository into `domains/<domain>/` of the hub (`git subtree add --prefix domains/<domain> <url> main` keeps its history).
+2. Delete what only served the repository: `domains/<domain>/.github/`, `.gitignore` and `README.md`.
+3. Run `dgac generate`: the hub's CODEOWNERS now lists the domain. Open a pull request on the hub.
+4. Optionally, in the hub's domains that read it, point `dbt_loom.config.yml` to `../<domain>/target/manifest.json` instead of the bucket.
+5. Archive the old repository. If it stays active, its CI fails once it pins a hub release that holds the domain: `dgac validate` refuses a domain that lives in two places.
+
+## What each command does
+
+Every command reads the hub (`governance/`). In a monorepo it also reads every domain in `domains/`; in a repository per domain it reads the domain named with `--domain`, as its CI does (`dgac --hub hub --domain . validate`).
+
+| Command | What it does | Monorepo | Repository per domain |
+| --- | --- | --- | --- |
+| `validate` | Checks the hub's files (hub settings, classification, glossaries, common semantic model) and each domain's (`governance.yml`, product cards, contracts, semantic extensions) against their schemas | The hub and every domain | In the domain's CI: the hub at its pinned release, and the domain. In the hub's CI: the hub only |
+| `generate` | Rewrites the generated files: CODEOWNERS, dbt groups, selectors, dbt semantic config. `--check` fails if one is stale | One CODEOWNERS for the whole repository | The domain's own CODEOWNERS and dbt files; the hub's CODEOWNERS in the hub |
+| `build` | Runs dbt, producers first: `dbt parse` with `--parse-only` (no warehouse), else `dbt build` one product at a time | Every domain, in order; a consumer reads its producer's manifest on disk | The domain only; the domains it reads come through dbt-loom, from their published manifests |
+| `assemble` | Writes each product's semantic model: the common model plus the product's extension, private semantics left out | Every product | The domain's products |
+| `manifest` | Writes `build/<domain>/governance-manifest.json`: owners, interfaces, contracts, what the domain reads and who reads it | Complete, with the consumers of each interface | What the domain reads, but not its consumers: collect the manifests in one place to know them |
+
+Run from a hub with no domain in `domains/`, `build`, `assemble` and `manifest` say so and do nothing.
+
 ## Upgrade the tool
 
 After `dgac init`, your repository holds your governance, not the tool. `requirements.txt` pins a release of `dgac`, which brings the schemas with it:

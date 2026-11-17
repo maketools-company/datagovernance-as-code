@@ -250,6 +250,25 @@ def test_new_domain_repository(repo_copy, tmp_path):
     assert dgac.main(["--hub", str(repo_copy), "--domain", str(domain), "validate"]) == 0
 
 
+def test_a_domain_cannot_live_in_the_hub_and_in_its_own_repository(repo_copy, tmp_path):
+    out = tmp_path / "repos"
+    out.mkdir()
+    assert run(repo_copy, "new-domain", "marketing", "--team", "@lumen-retail/marketing-data", "--repo", str(out)) == 0
+    domain = out / "data-dbt-marketing"
+    shutil.copytree(domain, repo_copy / "domains/marketing")          # moved into the hub, old repository kept
+    problems = dgac.validate(dgac.Repo(repo_copy, [domain]))
+    assert any("also in the hub" in e for e in problems.errors)
+    assert dgac.validate(dgac.Repo(repo_copy)).errors == []          # the hub itself is fine
+
+
+def test_commands_explain_a_hub_without_domains(repo_copy, capsys):
+    assert run(repo_copy, "init", "--organisation", "Acme", "--central-team", "@acme/data-governance") == 0
+    capsys.readouterr()
+    for command in ("build", "assemble", "manifest"):
+        assert run(repo_copy, command) == 0
+        assert "runs dgac there, with --hub" in capsys.readouterr().out
+
+
 # ---------------------------------------------------------------- with dbt
 
 @needs_dbt

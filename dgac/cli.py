@@ -312,8 +312,15 @@ def validate(repo: Repo) -> Problems:
                       "The common semantic model")
 
     hub_version = repo.hub["common_semantic_model"]["version"]
+    in_hub = {}                                   # domains kept in the hub's domains/, by name
+    for g in (root / "domains").glob("*/governance.yml"):
+        in_hub[(load_yaml(g) or {}).get("domain", g.parent.name)] = g.parent.resolve()
     for d in repo.domains:
         gov_file = d.path / "governance.yml"
+        if d.name in in_hub and in_hub[d.name] != d.path:
+            problems.error(where(d.path), f"Domain {d.name} is also in the hub, in {where(in_hub[d.name])}/. "
+                                          f"A domain lives in one place: once it has moved into the hub, "
+                                          f"archive this repository.")
         if not gov_file.exists():
             problems.error(where(d.path), f"Domain {d.path.name} does not declare its target level (no governance.yml).")
             continue
@@ -1552,6 +1559,10 @@ def main(argv: list[str]) -> int:
         return code
     if args.command == "generate":
         return generate(repo, args.check)
+    if args.command in ("build", "assemble", "manifest") and not repo.domains:
+        print(f"note     No domain in {rel(hub / 'domains', Path.cwd())}/: nothing to {args.command}. "
+              f"A domain in its own repository runs dgac there, with --hub.")
+        return 0
     if args.command == "build":
         return build(repo, args.dbt, args.parse_only)
     if args.command == "assemble":
