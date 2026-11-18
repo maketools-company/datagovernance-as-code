@@ -73,6 +73,8 @@ Nine principles define the standard. They hold whatever the tool; the rest of th
 
 ## Overview diagram
 
+![Federated: the central data governance team sets the standard, each domain applies it](docs/images/overview-diagram.png)
+
 The central data governance team writes the standard, provides the repository template and, with the governance committee, sets the minimum level every domain must reach. Each domain applies the standard in its own repository: a card and code owners for every data product, internal work kept private, shared data under a contract approved by the Data Owner, and automated checks that show the level reached. Domains use each other's shared data, never each other's internal work.
 
 ## Core concepts
